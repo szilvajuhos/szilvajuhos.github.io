@@ -13,6 +13,7 @@ tags:
 Running from duplicate marked files (getting pileups first)
 ------
 ```
-nextflow run MaxUlysse/nf-core\_sarek --input duplicateMarked.tsv -profile munin --step Recalibrate,Control-FREEC --skip\_qc bamQC
+nextflow run MaxUlysse/nf-core\_sarek --input duplicateMarked.tsv -profile munin --step Recalibrate --skip\_qc bamQC
+nextflow run MaxUlysse/nf-core\_sarek --input duplicateMarked.tsv -profile munin --step Control-FREEC --skip\_qc bamQC
 ```
 
