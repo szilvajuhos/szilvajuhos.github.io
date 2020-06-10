@@ -19,3 +19,26 @@ for f in `ls data/chr1/*bed| sort`;do SAMPLE=`basename ${f%.chr*}`; echo -n $SAM
 
 
 <br/><img src='/images/CFheatmap/chr1.png'>
+<br/><img src='/images/CFheatmap/chr2.png'>
+<br/><img src='/images/CFheatmap/chr3.png'>
+<br/><img src='/images/CFheatmap/chr4.png'>
+<br/><img src='/images/CFheatmap/chr5.png'>
+<br/><img src='/images/CFheatmap/chr6.png'>
+<br/><img src='/images/CFheatmap/chr7.png'>
+<br/><img src='/images/CFheatmap/chr8.png'>
+<br/><img src='/images/CFheatmap/chr9.png'>
+<br/><img src='/images/CFheatmap/chr10.png'>
+<br/><img src='/images/CFheatmap/chr11.png'>
+<br/><img src='/images/CFheatmap/chr12.png'>
+<br/><img src='/images/CFheatmap/chr13.png'>
+<br/><img src='/images/CFheatmap/chr14.png'>
+<br/><img src='/images/CFheatmap/chr15.png'>
+<br/><img src='/images/CFheatmap/chr16.png'>
+<br/><img src='/images/CFheatmap/chr17.png'>
+<br/><img src='/images/CFheatmap/chr18.png'>
+<br/><img src='/images/CFheatmap/chr19.png'>
+<br/><img src='/images/CFheatmap/chr20.png'>
+<br/><img src='/images/CFheatmap/chr21.png'>
+<br/><img src='/images/CFheatmap/chr22.png'>
+<br/><img src='/images/CFheatmap/chrX.png'>
+<br/><img src='/images/CFheatmap/chrY.png'>
