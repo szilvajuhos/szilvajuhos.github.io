@@ -16,3 +16,6 @@ for b in data/P*freectobed.bed; do SAMPLE=`basename ${b%.hg38*}`; echo $SAMPLE;f
 
 for f in `ls data/chr1/*bed| sort`;do SAMPLE=`basename ${f%.chr*}`; echo -n $SAMPLE"," && python it.py -b $f -l 248956422; done > chr1.csv
 ```
+
+
+<br/><img src='/images/CFheatmap/chr1.png'>
