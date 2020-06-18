@@ -11,7 +11,8 @@ tags:
 
 
 
-```for f in `cat current.samples`; do echo $f; for c in `seq 1 22` X Y;do CHROM="chr"${c};echo $CHROM; echo -n `basename -s .hg38.pileup.gz_ratio.freectobed.bed $f`",">>${CHROM}.csv; python it.py -b $f -c $CHROM -i ~/genome/Homo_sapiens_assembly38.fasta.fai >> ${CHROM}.csv;done; done
+```
+for f in `cat current.samples`; do echo $f; for c in `seq 1 22` X Y;do CHROM="chr"${c};echo $CHROM; echo -n `basename -s .hg38.pileup.gz_ratio.freectobed.bed $f`",">>${CHROM}.csv; python it.py -b $f -c $CHROM -i ~/genome/Homo_sapiens_assembly38.fasta.fai >> ${CHROM}.csv;done; done
 ```
 
 ## CHR1:
