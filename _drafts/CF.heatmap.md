@@ -26,14 +26,17 @@ find /data1 /data0 -maxdepth 4 -type d| grep -f current.samples | grep Results_h
  
 [makeBedGraphHeatmap.sh](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/makeBedGraphHeatmap.sh)
 
-### Heatmap from BedGraph file (containing ratios) 
+Heatmap from BedGraph file (containing ratios) 
 <br/><img src='/images/heatmap_BedGraph.png'>
 
-### Using ratios file and raw data the landscape is flat, because some ratio values are extreme:
+Using ratios file and raw data the landscape is flat, because some ratio values are extreme:
 <br/><img src='/images/heatmap_RatiosLinear.png'>
 
-### Scaling the same picture down to 1-3:
+Scaling the same picture down to 1-3:
 <br/><img src='/images/heatmap_RatiosLinear_1_3.png'>
 
-### Using log scale:
+Using log scale for ratios:
 <br/><img src='/images/heatmap_RatiosLog.png'>
+
+Copy Number column from the ratios file:
+<br/><img src='/images/heatmap_ratioCN.png'>
