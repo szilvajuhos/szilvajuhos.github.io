@@ -17,5 +17,12 @@ for f in `cat current.samples`; do echo $f; for c in `seq 1 22` X Y;do CHROM=chr
 
 ```
 
-## CHR1:
-<br/><img src='/images/CFheatmap/chr1.png'>
+
+Control-FREEC output:
+ - \_CNVs: file with coordinates of predicted copy number alterations. 
+ - \_ratio.txt: file with ratios and predicted copy number alterations for each window.
+ - \_BAF.txt: file B-allele frequencies for each possibly heterozygous SNP position.
+ - \_sample.cnp and \_control.cnp files: files with raw copy number profiles.
+ - \_ratio.BedGraph  file with ratios in BedGraph format for visualization
+ 
+ 
