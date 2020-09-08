@@ -9,7 +9,7 @@ tags:
   - CNV
 ---
 
-Control-FREEC output:
+Control-FREEC output [as at their page](http://boevalab.inf.ethz.ch/FREEC/tutorial.html#OUTPUT):
  - \_CNVs: file with coordinates of predicted copy number alterations. 
  - \_ratio.txt: file with ratios and predicted copy number alterations for each window.
  - \_BAF.txt: file B-allele frequencies for each possibly heterozygous SNP position.
@@ -40,3 +40,6 @@ Using log scale for ratios:
 
 Copy Number column from the ratios file:
 <br/><img src='/images/heatmap_ratioCN.png'>
+
+Copy Numbers from the \_CNVs file:
+<br/><img src='/images/heatmap_CNVs.png'>
