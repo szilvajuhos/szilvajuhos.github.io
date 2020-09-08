@@ -9,15 +9,6 @@ tags:
   - CNV
 ---
 
-
-
-```
-for f in `cat current.samples`; do echo $f; for c in `seq 1 22` X Y;do CHROM=chr${c}; echo -n $f",">>${CHROM}.csv; python it.py -b BedGraphs/${f}.hg38.pileup.gz_ratio.BedGraph -c $CHROM -i ~/genome/Homo_sapiens_assembly38.fasta.fai >> ${CHROM}.csv;done; done
-
-
-```
-
-
 Control-FREEC output:
  - \_CNVs: file with coordinates of predicted copy number alterations. 
  - \_ratio.txt: file with ratios and predicted copy number alterations for each window.
@@ -25,4 +16,11 @@ Control-FREEC output:
  - \_sample.cnp and \_control.cnp files: files with raw copy number profiles.
  - \_ratio.BedGraph  file with ratios in BedGraph format for visualization
  
+
+** Scripts to generate different heatmaps are at [BTB-scripts repo](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/) **
+
  
+# Generating heatmap from BedGraph file (containing ratios) 
+[makeBedGraphHeatmap.sh](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/makeBedGraphHeatmap.sh)
+<br/><img src='/images/heatmap_BedGraph.png'>
+
