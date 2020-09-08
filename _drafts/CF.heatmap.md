@@ -17,10 +17,23 @@ Control-FREEC output:
  - \_ratio.BedGraph  file with ratios in BedGraph format for visualization
  
 
-** Scripts to generate different heatmaps are at [BTB-scripts repo](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/) **
+### Scripts to generate different heatmaps are at [BTB-scripts repo](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/) **
 
+Finding files:
+```
+find /data1 /data0 -maxdepth 4 -type d| grep -f current.samples | grep Results_hg38| grep -v old
+```
  
-# Generating heatmap from BedGraph file (containing ratios) 
 [makeBedGraphHeatmap.sh](https://github.com/szilvajuhos/btb-scripts/blob/master/heatmap/makeBedGraphHeatmap.sh)
+
+### Heatmap from BedGraph file (containing ratios) 
 <br/><img src='/images/heatmap_BedGraph.png'>
 
+### Using ratios file and raw data the landscape is flat, because some ratio values are extreme:
+<br/><img src='/images/heatmap_RatiosLinear.png'>
+
+### Scaling the same picture down to 1-3:
+<br/><img src='/images/heatmap_RatiosLinear_1_3.png'>
+
+### Using log scale:
+<br/><img src='/images/heatmap_RatiosLog.png'>
