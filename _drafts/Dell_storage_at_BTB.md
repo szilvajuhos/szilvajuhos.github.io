@@ -163,9 +163,58 @@ Filesystem                  Size  Used Avail Use% Mounted on
 /dev/mapper/storage2-data2   34T   18T   17T  53% /data2
 ```
 
-### Creating a new disk array
-It is recommended not to make an array larger than 70T 
+### Creating a new volume / new disk array
+It is recommended not to make an array larger than ~70T though I know there is one that is already quite bigger. 
+The main point is not make all the disks as a single huge array, as RAID rebalance takes ages and if there is
+a failure at least some of the arrays still can be used. 
+
+If you do not have any volumes yet, it is relatively straightforward to make one: create a new volume (right-click on 
+Volumes and Create Volume), after that assign the new 
+disks to the volume. Generally, it is difficult to estimate the capacity of the system, as the tiered architecture 
+makes it impossible to calculate it, as you would do for RAID-10. Therefore, the foolproof approach is to make a small
+volume first, set its filesystem up, and increase the size in the next step instead of making one huge volume and 
+realizing it is overcommited. OTOH, as I have mentioned earlier, it is possible to make a volume that is larger than the
+available disk space, but we will fail with file system creation when we are trying to use the stuff.    
+      
+If there is only one volume in the storage center (i.e. if you have a new server with only one volume set up) new disks 
+will be assigned to this volume automatically. I do not know whether it is a feature or a bug, but if this happens, 
+you have to unassign the yet unusued disks, make a new volume, and assign them to the new one. I had no chance to try
+it out, but my feeling is that it is better to make a new volume *before* adding the new disks to avoid this feature.
+
+When createing a brand-new volume, the steps are more or less the same as previously when adding new disks to an 
+existing volume. Things to consider:
+
+- once created a new volume, that would appear in the multipath list (`multipath -l`) - note its id like **mpathg**
+- find the SCSI IDs with in this list, they look like `1:0:6:2 sde 8:64 active undef running` and rescan them as above
+- using `parted` create a new primary partition (partition 1) for the new volume - though you can use the whole 
+device as a single partition, it will be awkward to continue with the rest of the procedure: 
+```
+# parted /dev/mapper/mpathg
+# pvcreate /dev/mapper/mpathg1
+# pvscan
+# pvdisplay /dev/mapper/mpathg1
+# vgscan
+# vgdisplay storageX
+# vgs
+# vgextend -Ay storageX /dev/mapper/mpathg1
+# lvextend -l 100%ORIGIN /dev/storageX/dataX
+# vgdisplay
+# mkfs.xfs /dev/mapper/mpathg1
+# mkdir /dataX
+```
+Finally extend `/etc/fstab` with line using TAB delimiters:
+```
+...
+/dev/mapper/storageX-dataX      /dataX  xfs     defaults        0 0
+```
+          
 
 ### Changing default snapshot policy
 The default policy is not  
+
+### - to remove a multipath device:
+umount and lvremove, vgremove, pvremove as needed
+multipath -l # to read device names
+echo 1 >  /sys/block/sdX/device/delete
+multipath -f /dev/mapper/mpathX
 
