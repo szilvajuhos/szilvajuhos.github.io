@@ -53,12 +53,22 @@ the `nf-core/sarek` repository, downloads it and runs
 - `-r 2.6.1` refers to a particular version of Sarek. One can find out what tools are included in which version have
 to read the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGELOG.md
 - `-profile test,munin` means that we want to run the tests on munin. When running things on munin, use the 
-`-profile munin` directive. Besides this, there are quite a few configs available, including UPPMAX and AWS 
-(https://github.com/nf-core/configs) . 
+`-profile munin` directive only. Besides this, there are quite a few configs available, including UPPMAX and AWS 
+(https://github.com/nf-core/configs) . To have a look at the test configuration of Sarek, check out https://github.com/nf-core/sarek/blob/master/conf/test.config  
+The test should complete with a "Pipeline completed successfully" message. 
 
 #### Sarek use cases:
 There is already a collection of use cases in the documentation:  https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
-You always have to think through the sample and the tools you want to use. 
+There are three things to add: the input, the step and the tools you want to use in a particular step.  
+
+_Input_ can be defined either by making a TSV file, or, if starting from raw data, supplying a directory containing 
+FASTQ files.
+
+_Step_ is to choose from major processes, you can choose only one of them. Step can be "mapping", 
+"prepare_recalibration", "recalibrate", "variant_calling", "annotate", "Control-FREEC". Control-FREEC has its own step
+since preparing data for Control-FREEC is different.
+
+   
 
 
 
