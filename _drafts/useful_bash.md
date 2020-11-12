@@ -57,13 +57,14 @@ to read the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGEL
 (https://github.com/nf-core/configs) . 
 
 #### Sarek use cases:
-There is already a collection of use cases in the documentation:  
+There is already a collection of use cases in the documentation:  https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
+You always have to think through the sample and the tools you want to use. 
 
 
 
 ### Reproduce things with conda
 Many times you want to install some software, but you not want to bother the system manager. 
-Or, your belowed software needs version 3.4.5 of some other software, but you have 
+Or, your belowed software needs version 3.4.5 of some other software, but you have something else installed.  
 
 ### reproduce things with singularity
 singularity shell
