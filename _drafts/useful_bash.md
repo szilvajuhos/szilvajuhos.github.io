@@ -58,7 +58,7 @@ to read the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGEL
 The test should complete with a "Pipeline completed successfully" message. 
 
 #### Sarek use cases:
-There is already a collection of use cases in the documentation:  https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
+There is already a collection of use cases in the documentation: https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
 There are three things to add: the input, the step and the tools you want to use in a particular step.  
 
 _Input_ can be defined either by making a TSV file, or, if starting from raw data, supplying a directory containing 
@@ -68,13 +68,54 @@ _Step_ is to choose from major processes, you can choose only one of them. Step 
 "prepare_recalibration", "recalibrate", "variant_calling", "annotate", "Control-FREEC". Control-FREEC has its own step
 since preparing data for Control-FREEC is different.
 
-   
+_Tools_ are the different software that we can call in a particular step. I.e.
 
+There is a short description on how to make TSV files: https://github.com/nf-core/sarek/blob/master/docs/input.md . Below
+I consider an input file with a single sample, one tumour and one blood sample like:
+
+```
+G15511	XX	0	NORMAL_C09DFN   /path/to/C09DFN.bam	/path/to/C09DFN.bai
+G15511	XX	1	TUMOR_D0ENMT    /path/to/D0ENMT.bam	/path/to/D0ENMT.bai
+```  
+
+#### Run basic callers:
+
+The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
+It is advised to run Strelka and Manta together, as the default behaviour of Sarek is to run the Strelka best practices 
+pipeline where Manta creates a candidate list for small indels. Having recalibrated bams to call them is like:
+
+```
+nextflow run nf-core/sarek -r 2.6.1 -profile munin --step variantcalling --input test.tsv --tools haplotypecaller,strelka
+```
+
+Note, the `nextflow run nf-core/sarek -r 2.6.1 -profile munin` part is and will be just the same in all cases. If 
+you are creating a shell script to run things, better to write something like:
+
+```
+#/bin/bash -ex
+NFXRUN="nextflow run nf-core/sarek -r 2.6.1 -profile munin"
+${NFXRUN} --step ....(rest of the command)
+```  
 
 
 ### Reproduce things with conda
 Many times you want to install some software, but you not want to bother the system manager. 
-Or, your belowed software needs version 3.4.5 of some other software, but you have something else installed.  
+Or, your belowed software needs version 3.4.5 of some other software, but you have 1.2.3 installed. 
+Conda (notably [Bioconda](https://bioconda.github.io/user/install.html) ) can resolve this for you by installing
+software to your local directories and by using environments that are fine-tuned for compatible versions. There are 
+many different people using conda, not only bioinformaticians. The core conda packages are those that are used by 
+practically everybody, but to add biology-focused packages, it is advised to add 
+[other channels](https://bioconda.github.io/user/install.html#set-up-channels) like:
+
+```
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
+After installing and adding channels to conda next step is to use _environments_. Without these we can not install
+multiple versions of different software. 
+
 
 ### reproduce things with singularity
 singularity shell
