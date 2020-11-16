@@ -114,8 +114,114 @@ conda config --add channels conda-forge
 ```
 
 After installing and adding channels to conda next step is to use _environments_. Without these we can not install
-multiple versions of different software. 
+multiple versions of different software. To activate the base environment (that contains only base packages) use:
+```
+$ conda activate base
+(base) $   
+```
+All new environment should be based on _base_, but we should not bloat base with all the software we are using.
+Instead, make new environments and delete unused ones. An example of creating two environments that contain
+different versions of GATK:
+```
+(base) $ conda search gatk
+Loading channels: done
+# Name                       Version           Build  Channel             
+gatk                             3.5              10  bioconda            
+...
+gatk                             3.7          py36_1  bioconda            
+gatk                             3.8              10  bioconda            
+...
+```
+(it will list quite a few other versions as well). In fact, `conda search gatk4` will list even more entries as the 
+Broad team started to use conda heavily. Now we will make two GATK environments: one for GATK 3.8, the other for GATK4. 
+First step is to create new environments:
+```
+$ conda activate base   # important to be in the base environment 
+(base) $ conda create -n gatk38
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+## Package Plan ##
+  environment location: /home/szilva/miniconda3/envs/gatk38
+Proceed ([y]/n)?
+[...]
+```   
+Creating a new environment will not activate it yet, so we can make the gatk4 version as well by typing 
+`conda create -n gatk4` . If we are lost in different conda commands (as I am all the time), just type `conda` with 
+no arguments, it will give you a well structured help system. Once we have the two GATK environments ready, time to 
+activate one of them, and add the appropriate GATK to it:
+```
+$ conda activate gatk38
+(base) $ conda activate gatk38
+(gatk38) $ conda install gatk
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
 
+## Package Plan ##
+  environment location: /home/szilva/miniconda3/envs/gatk38
+  added / updated specs:
+    - gatk
+
+The following packages will be downloaded:
+    package                    |            build
+    ---------------------------|-----------------
+    binutils_impl_linux-64-2.35.1|       h17ad2fc_0         9.3 MB  conda-forge
+    bwidget-1.9.14             |       ha770c72_0         119 KB  conda-forge
+    ca-certificates-2020.11.8  |       ha878542_0         145 KB  conda-forge
+...
+```
+If we are not adding version, conda will install the latest version of a particular package. To install GATK 3.X one 
+have to have many different packages, with particular versions, but conda will handle this for us. We can check whether 
+GATK is installed:
+```
+(gatk38) $ gatk3
+##### ERROR ------------------------------------------------------------------------------------------
+##### ERROR A USER ERROR has occurred (version 3.8-1-0-gf15c1c3ef): 
+##### ERROR
+##### ERROR This means that one or more arguments or inputs in your command are incorrect.
+##### ERROR The error message below tells you what is the problem.
+[...]
+##### ERROR MESSAGE: Argument with name '--analysis_type' (-T) is missing.
+##### ERROR ------------------------------------------------------------------------------------------
+``` 
+We can go through the same with GATK4, first activating the still empty GATK4 environment, and 
+installing the latest version:
+
+```
+(gatk38) $ conda activate gatk4
+(gatk4) $ conda install gatk4
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+
+## Package Plan ##
+  environment location: /home/szilva/miniconda3/envs/gatk4
+  added / updated specs:
+    - gatk4
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    gatk4-4.1.9.0              |           py39_0       276.5 MB  bioconda
+    ------------------------------------------------------------
+                                           Total:       276.5 MB
+[...]
+
+(gatk4) $ gatk 
+
+ Usage template for all tools (uses --spark-runner LOCAL when used with a Spark tool)
+    gatk AnyTool toolArgs
+
+ Usage template for Spark tools (will NOT work on non-Spark tools)
+    gatk SparkTool toolArgs  [ -- --spark-runner <LOCAL | SPARK | GCS> sparkArgs ]
+
+ Getting help
+    gatk --list       Print the list of available tools
+
+    gatk Tool --help  Print help on a particular tool
+[...]
+```
+
+Once we are done with environments, we can deactivate them by `conda deactivate`. 
 
 ### reproduce things with singularity
 singularity shell
