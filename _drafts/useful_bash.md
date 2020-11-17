@@ -310,7 +310,121 @@ The following packages will be downloaded:
 [...]
 ```
 
-Once we are done with environments, we can deactivate them by `conda deactivate`. 
+Once we are done with environments, we can deactivate them by `conda deactivate`. Environments are hierarchical, 
+when we are creating one, the actual enviroment will be considered as "base", meaning new software will be installed 
+on top of the current packages. Hence, if we are installing many software into `base`, quickly there will be a 
+version conflict. On the other hand, if we are using different environment for different tasks, we will use up disk 
+space, but that is negligible compared to NGS data. 
+
+#### Deleting a broken environment
+If we screw up an environment, the best is to get rid of it; first I list the available environments, than delete
+the environment called `bugger`:
+```
+(base) $ conda env list
+# conda environments:
+#
+base                  *  /home/szilva/miniconda38
+bugger                   /home/szilva/miniconda38/envs/bugger
+gatk38                   /home/szilva/miniconda38/envs/gatk38
+gatk4                    /home/szilva/miniconda38/envs/gatk4
+
+(base) $ conda env remove -n bugger
+
+Remove all packages in environment /home/szilva/miniconda38/envs/bugger:
+
+(base) $ conda env list
+# conda environments:
+#
+base                  *  /home/szilva/miniconda38
+gatk38                   /home/szilva/miniconda38/envs/gatk38
+gatk4                    /home/szilva/miniconda38/envs/gatk4
+```      
+
+#### Installing software with a given version
+I am using a test environment I have created to check various versions of samtools, and will install an earlier
+version, i.e. version 1.3.1:
+```
+(test) $ samtools
+bash: samtools: command not found
+(test) $ conda search samtools
+Loading channels: done
+# Name                       Version           Build  Channel
+samtools                      0.1.12               0  bioconda
+samtools                      0.1.12               1  bioconda
+samtools                      0.1.12               2  bioconda
+samtools                      0.1.13               0  bioconda
+[ ... this actually takes some time ... ]
+(test) $ conda install samtools=1.3.1
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+## Package Plan ##
+  environment location: /home/szilva/miniconda38/envs/test
+  added / updated specs:
+    - samtools=1.3.1
+
+The following packages will be downloaded:
+    package                    |            build
+    ---------------------------|-----------------
+    c-ares-1.16.1              |       h516909a_3         107 KB  conda-forge
+    curl-7.71.1                |       he644dc0_8         139 KB  conda-forge
+    krb5-1.17.1                |       hfafb76e_3         1.5 MB  conda-forge
+[...]
+Proceed ([y]/n)?
+
+Downloading and Extracting Packages
+krb5-1.17.1          | 1.5 MB    | #########
+[...]
+(test) $ samtools
+
+Program: samtools (Tools for alignments in the SAM format)
+Version: 1.3.1 (using htslib 1.3.1)
+
+Usage:   samtools <command> [options]
+[...]
+``` 
+
+#### Updating to the latest version
+Simple updating _should_ work as `conda update samtools`. Life is hard, i.e. it is not working as expected, my guess is 
+because the difference between samtools 1.3.1 and 1.11 (the latest) is too large:
+```
+(test) $ conda update samtools
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+## Package Plan ##
+  environment location: /home/szilva/miniconda38/envs/test
+  added / updated specs:
+    - samtools
+The following NEW packages will be INSTALLED:
+  bzip2              conda-forge/linux-64::bzip2-1.0.8-h516909a_3
+  libgcc             conda-forge/linux-64::libgcc-7.2.0-h69d50b8_2
+  xz                 conda-forge/linux-64::xz-5.2.5-h516909a_1
+The following packages will be UPDATED:
+  samtools                                 1.3.1-h80b0bb3_7 --> 1.7-1
+Proceed ([y]/n)? y
+[...]
+Executing transaction: done
+(test) $ samtools
+samtools: error while loading shared libraries: libcrypto.so.1.0.0: cannot open shared object file: No such file or directory
+```
+We can see it was not even updating to the latest version (1.11). Whatever, we can either forcing reinstall, and hope the 
+best, or delete this broken environment, create a new one, and run `conda install samtools` that should do the latest
+version. Forcing reinstall works in this case:
+```
+(test) $ conda install samtools=1.11
+Collecting package metadata (current_repodata.json): done
+Solving environment: failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): done  
+Solving environment: done
+[...]
+(test) $ samtools --version
+samtools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+```
+The general rule is that do not expect all the version jumps are working (i.e. we already know that GATK 3.X to 
+GATK 4.X transition is hopeless), but `conda update package-name` should work in most cases. 
+
 
 ### reproduce things with singularity
 singularity shell
