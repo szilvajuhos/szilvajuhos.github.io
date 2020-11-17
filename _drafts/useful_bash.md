@@ -311,13 +311,13 @@ The following packages will be downloaded:
 ```
 
 Once we are done with environments, we can deactivate them by `conda deactivate`. Environments are hierarchical, 
-when we are creating one, the actual enviroment will be considered as "base", meaning new software will be installed 
+when we are creating one, the actual environment will be considered as "base", meaning new software will be installed 
 on top of the current packages. Hence, if we are installing many software into `base`, quickly there will be a 
 version conflict. On the other hand, if we are using different environment for different tasks, we will use up disk 
 space, but that is negligible compared to NGS data. 
 
 #### Deleting a broken environment
-If we screw up an environment, the best is to get rid of it; first I list the available environments, than delete
+If we screw up an environment, the best is to get rid of it; first I list the available environments, then delete
 the environment called `bugger`:
 ```
 (base) $ conda env list
@@ -384,8 +384,8 @@ Usage:   samtools <command> [options]
 ``` 
 
 #### Updating to the latest version
-Simple updating _should_ work as `conda update samtools`. Life is hard, i.e. it is not working as expected, my guess is 
-because the difference between samtools 1.3.1 and 1.11 (the latest) is too large:
+Simple updating _should_ work as `conda update samtools`. Life is hard, for samtools it is not working as expected, 
+my guess because the difference between samtools 1.3.1 and 1.11 (the latest) is too large:
 ```
 (test) $ conda update samtools
 Collecting package metadata (current_repodata.json): done
@@ -404,7 +404,7 @@ Proceed ([y]/n)? y
 [...]
 Executing transaction: done
 (test) $ samtools
-samtools: error while loading shared libraries: libcrypto.so.1.0.0: cannot open shared object file: No such file or directory
+samtools: error while loading shared libraries: libcrypto.so.1.0.0: cannot open shared object file: No such file or directory.
 ```
 We can see it was not even updating to the latest version (1.11). Whatever, we can either forcing reinstall, and hope the 
 best, or delete this broken environment, create a new one, and run `conda install samtools` that should do the latest
