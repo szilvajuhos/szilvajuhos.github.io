@@ -6,6 +6,11 @@ tags:
   - bash
   - linux
 ---
+- [To get familiar with Sarek](#To-get-familiar-with-Sarek)
+    - [Sarek use cases](#Sarek-use-cases)
+    - [Running NA12878 germline](#Running-NA12878-germline)
+    - [Run basic callers](#Run-basic-callers)
+- [Reproduce things with conda](#Reproduce-things-with-conda)
 
 ### What is a pipeline?
 When making a pipeline, we are hoping that it will:
@@ -66,19 +71,103 @@ FASTQ files.
 
 _Step_ is to choose from major processes, you can choose only one of them. Step can be "mapping", 
 "prepare_recalibration", "recalibrate", "variant_calling", "annotate", "Control-FREEC". Control-FREEC has its own step
-since preparing data for Control-FREEC is different.
+since preparing data for Control-FREEC is different. With _step_ we specify the starting point: all following steps 
+will be run if they are available (dependencies met, for example recalibrated bams are prepared) and tools are defined
+in the command line. I.e. variant calling will only be run if an available variant caller is specified 
+with `--tools` directive, annotation will only be run if both a variant caller and an annotator is specified. This
+command below will start mapping, once recalibrated BAMs are available starts Strelka, finally annotates the results 
+with VEP: 
+```
+$ nextflow run nf-core/sarek -r 2.6.1 -profile munin --input sample.tsv --tools strelka,vep  
+```
 
 _Tools_ are the different software that we can call in a particular step. I.e.
 
-There is a short description on how to make TSV files: https://github.com/nf-core/sarek/blob/master/docs/input.md . Below
-I consider an input file with a single sample, one tumour and one blood sample like:
+There is a short description on how to make TSV files: https://github.com/nf-core/sarek/blob/master/docs/input.md . 
+Below I consider an input file with a single sample, one tumour and one blood sample like:
 
 ```
 G15511	XX	0	NORMAL_C09DFN   /path/to/C09DFN.bam	/path/to/C09DFN.bai
 G15511	XX	1	TUMOR_D0ENMT    /path/to/D0ENMT.bam	/path/to/D0ENMT.bai
 ```  
 
-#### Run basic callers:
+When starting from raw FASTQ, Sarek expects all input files to be GZ compressed. 
+
+#### Running NA12878 germline 
+The well-knows NA12878 test set from the _Genome in a Bottle (GiaB)_ project is at 
+/data2/NA12878/fastq/ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NIST_NA12878_HG001_HiSeq_300x/ on munin. To run a 
+germline mapping one can start (note I am using `--sentieon` on munin to speed up things):
+```
+$ cd /data2/tutorial 
+$ nextflow run nf-core/sarek -r 2.6.1 -profile munin --input \
+na12878.tsv --sentieon 2>&1 | tee na12878.log
+```
+
+There is a funny [redirection](#run-a-script-and-log-its-output) at the end of the command (the `2>&1` part) to save
+the output. Nevertheless, there is a `.nextflow.log` file always in the current directory to save the steps of the very
+last run. One reason that you can not run multiple nextflow runs in the same directory is that the processes would
+overwrite their logfiles. As the workflow progresses, you can check what is happening either by looking at the logfiles,
+the terminal output or the other pipeline info files (details below about these). If you list all the `.nextflow.log*` 
+files, you will see that there are actually many if you run nextflow several times before:   
+```
+(base) szilva@munin /data2/tutorial $ ls -l .nextflow.log*
+-rw-rw-r-- 1 szilva   btb 371184 Nov 17 16:15 .nextflow.log
+-rw-rw-r-- 1 szilva   btb  61389 Nov 17 09:32 .nextflow.log.1
+-rw-rw-r-- 1 teresita btb 145069 Nov 16 14:11 .nextflow.log.2
+-rw-rw-r-- 1 teresita btb   1010 Nov 13 09:46 .nextflow.log.3
+-rw-rw-r-- 1 teresita btb 650798 Nov 12 17:09 .nextflow.log.4
+-rw-rw-r-- 1 teresita btb  56373 Nov 12 09:38 .nextflow.log.5
+-rw-rw-r-- 1 teresita btb 156757 Nov 12 09:29 .nextflow.log.6
+-rw-rw-r-- 1 szilva   btb 154204 Nov 12 09:26 .nextflow.log.7
+-rw-rw-r-- 1 teresita btb 143895 Nov 12 09:26 .nextflow.log.8
+-rw-rw-r-- 1 teresita btb   4265 Nov 12 09:24 .nextflow.log.9
+```
+
+This means every time we launch a new run, the old logfile will be renamed as `.nextflow.log.1`. If there is already
+a logfile called `.nextflow.log.1`, that will be renamed as `.nextflow.log.2` and so on. This is also true to the
+pipeline info file one can find in the `results/pipeline_info` directory:
+```
+(base) szilva@munin /data2/tutorial $ ls -l results/pipeline_info/
+total 33216
+-rw-rw-r-- 1 szilva   btb 2936288 Nov 17 09:32 execution_report.html
+-rw-rw-r-- 1 teresita btb 3055459 Nov 16 14:11 execution_report.html.1
+[...]
+-rw-rw-r-- 1 szilva   btb 3056607 Nov 11 17:42 execution_report.html.9
+-rw-rw-r-- 1 szilva   btb    7124 Nov 17 09:32 execution_timeline.html
+-rw-rw-r-- 1 teresita btb   30397 Nov 16 14:11 execution_timeline.html.1
+[...]
+-rw-rw-r-- 1 szilva   btb   30436 Nov 11 17:42 execution_timeline.html.9
+-rw-rw-r-- 1 szilva   btb   47582 Nov 17 15:42 execution_trace.txt
+-rw-rw-r-- 1 szilva   btb    1065 Nov 17 09:32 execution_trace.txt.1
+[...]
+-rw-rw-r-- 1 szilva   btb     101 Nov 12 09:23 execution_trace.txt.9
+-rw-rw-r-- 1 szilva   btb  279740 Nov 17 09:32 pipeline_dag.svg.1
+[...]
+-rw-rw-r-- 1 szilva   btb  284442 Nov 11 17:42 pipeline_dag.svg.9
+-rw-rw-r-- 1 szilva   btb   21036 Nov 17 09:32 pipeline_report.html
+-rw-rw-r-- 1 szilva   btb    3940 Nov 17 09:32 pipeline_report.txt
+-rw-r--r-- 1 szilva   btb   44152 Nov 17 09:40 results_description.html
+-rw-r--r-- 1 szilva   btb     373 Nov 17 09:35 software_versions.csv
+```
+
+These files are:
+ - execution_report.html : gives a pretty output about tasks, CPU and IO usage 
+ - execution_timeline.html : timing summary of different tasks
+ - ***execution_trace.txt*** : this is what I like the most: runtime and IO statistics of completed tasks in plain 
+ text. Can be processed with awk or loaded into Excel. 
+ - pipeline_dag.svg : [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) representation of the workflow 
+ that is more impressive than useful
+ - pipeline_report.html : launching parameters in html
+ - pipeline_report.txt : same information in text
+ - results_description.html : description of used tools in html
+ - software_versions.csv : version of each tool used
+
+When running a task like the one above, mapping will be done separately for each line in the TSV file processing 
+different reads groups in separate tasks. At the end there will be a merging step, afterwards deduplication and 
+recalibration. It is important to know that the deduplicated BAM file still contains all the reads, but the recalibrated
+one _does not_: centromeres and telomeres, long tandem repeat regions are missing. 
+
+#### Run basic callers
 
 The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
 It is advised to run Strelka and Manta together, as the default behaviour of Sarek is to run the Strelka best practices 
