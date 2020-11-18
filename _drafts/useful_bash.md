@@ -6,11 +6,13 @@ tags:
   - bash
   - linux
 ---
+- [What is a pipeline?](#What-is-a-pipeline?)
 - [To get familiar with Sarek](#To-get-familiar-with-Sarek)
     - [Sarek use cases](#Sarek-use-cases)
     - [Running NA12878 germline](#Running-NA12878-germline)
     - [Run basic callers](#Run-basic-callers)
 - [Reproduce things with conda](#Reproduce-things-with-conda)
+- [Reproduce things with singularity](#Reproduce-things-with-singularity)
 
 ### What is a pipeline?
 When making a pipeline, we are hoping that it will:
@@ -426,8 +428,54 @@ The general rule is that do not expect all the version jumps are working (i.e. w
 GATK 4.X transition is hopeless), but `conda update package-name` should work in most cases. 
 
 
-### reproduce things with singularity
-singularity shell
+### Reproduce things with singularity
+The extreme version of using restricted, well-defined environments is unsing [singularity](https://sylabs.io/docs/) 
+containers. Singularity is practically a small machine inside a machine. On our server containers are at 
+`/data1/containers`, the most straightforward way to start the Sarek container is like:
+```
+$ singularity shell /data1/containers/nfcore-sarek-2.6.1.img
+Singularity nfcore-sarek-2.6.1.img:~>
+```
+It will have a new prompt, has little to do with our _private_ conda, and going to include only software that are 
+included in the container. There is a conda environment though that is valid for this container, you can check its 
+location with `conda env list`. It is pointing to `/opt/conda/envs/nf-core-sarek-2.6.1`, where the Sarek binaries are
+installed. Since Sarek contains BWA, Control-FREEC, Manta, etc, you can find these pre-installed in the 
+`/opt/conda/envs/nf-core-sarek-2.6.1/bin` directory, and can try out them:
+
+```
+Singularity nfcore-sarek-2.6.1.img:~> freec
+Control-FREEC v11.5 : a method for automatic detection of copy number alterations, subclones and 
+for accurate estimation of contamination and main ploidy using deep-sequencing data
+	Please specify a config file
+[...]
+Singularity nfcore-sarek-2.6.1.img:~> configManta.py 
+Usage: configManta.py [options]
+
+Version: 1.6.0
+[...]
+Singularity nfcore-sarek-2.6.1.img:~> gatk Mutect2
+Using GATK jar /opt/conda/envs/nf-core-sarek-2.6.1/share/gatk4-4.1.7.0-0/gatk-package-4.1.7.0-local.jar
+Running:
+    java -Dsamjdk.use_async_io_read_samtools=false -Dsamjdk.use_async_io_write_samtools=true -Dsamjdk.use_async_io_write_tribble=false -Dsamjdk.compression_level=2 -jar /opt/conda/envs/nf-core-sarek-2.6.1/share/gatk4-4.1.7.0-0/gatk-package-4.1.7.0-local.jar Mutect2
+USAGE: Mutect2 [arguments]
+Call somatic SNVs and indels via local assembly of haplotypes
+Version:4.1.7.0
+Required Arguments:
+--input,-I:String             BAM/SAM/CRAM file containing reads  This argument must be specified at least once.
+                              Required.
+[...]
+```
+
+This way you can have software installed without pestering the sysadmin _and_ versioning is also controlled: one
+container will use one well defined version of the software. In fact you do not have to go into the singularity shell, 
+you can use `exec` to run a program included in the container:
+  
+```
+$ singularity exec /data1/containers/nfcore-sarek-2.6.1.img freec -conf bugger.conf
+Control-FREEC v11.5 : a method for automatic detection of copy number alterations, 
+subclones and for accurate estimation of contamination and main ploidy using deep-sequencing data
+        Could not find your config file.. Please, check the existance of bugger.conf
+```
 
 ### Where is my file
 You have 200T data around and you are remembering only vaguely the name of the file
