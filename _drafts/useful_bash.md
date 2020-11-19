@@ -13,6 +13,7 @@ tags:
     - [Run basic callers](#Run-basic-callers)
 - [Reproduce things with conda](#Reproduce-things-with-conda)
 - [Reproduce things with singularity](#Reproduce-things-with-singularity)
+- [Where is my file](Where-is-my-file)
 
 ### What is a pipeline?
 When making a pipeline, we are hoping that it will:
@@ -429,7 +430,7 @@ GATK 4.X transition is hopeless), but `conda update package-name` should work in
 
 
 ### Reproduce things with singularity
-The extreme version of using restricted, well-defined environments is unsing [singularity](https://sylabs.io/docs/) 
+The extreme version of using restricted, well-defined environments is using [singularity](https://sylabs.io/docs/) 
 containers. Singularity is practically a small machine inside a machine. On our server containers are at 
 `/data1/containers`, the most straightforward way to start the Sarek container is like:
 ```
@@ -478,7 +479,75 @@ subclones and for accurate estimation of contamination and main ploidy using dee
 ```
 
 ### Where is my file
-You have 200T data around and you are remembering only vaguely the name of the file
+You have 200T data around and you are remembering only vaguely the name of the file. Munin has a (quite standard) 
+database that is updated every evening, and can be searched with the command `locate`. (Since this database is updated
+every evening by scanning through the disks, it is an other reason to clean up stuff.) If trying to find a pattern like 
+`Homo_sapiens`, only type: 
+
+```
+$ locate Homo_sapiens| grep -v work |head
+/data0/btb/VarSeq/Common Data/Annotations/ClinVar2019-08-01-NCBI_GRCh_38_Homo_sapiens.tsf
+/data0/btb/VarSeq/Common Data/Annotations/ClinVarTranscriptCounts2019-08-01-NCBI_GRCh_38_Homo_sapiens.tsf
+/data0/btb/VarSeq/Common Data/Annotations/ConservationScoresExonic-GHI_2018-05-01_GRCh_38_Homo_sapiens.tsf
+[...]
+``` 
+
+You can use [regexp](https://en.wikipedia.org/wiki/Regular_expression), or you can pipe it into grep, awk whatever:
+ 
+```
+$ locate *UCSC_GRCh_[0-9][0-9]_*_Homo_sapiens*| egrep -v "tere|old|softw"
+/data0/btb/VarSeq/Common Data/Annotations/Cytobands2009-06-12-UCSC_GRCh_37_g1k_Homo_sapiens.tsf
+/data1/VarSeq/Common Data/Annotations/Cytobands2009-06-12-UCSC_GRCh_37_g1k_Homo_sapiens.tsf
+```
+
+Though if you create a file, changes in the `locate` database will be updated only next evening, new files
+are not visible immediately (`touch` creates a new empty file):
+
+```
+$ touch mynewfilewithalongname
+$ locate mynewfilewithalongname
+$
+```
+
+An other way to find files is use the command `find` . It is a bit more complicated to use, but has an immediate effect:
+```
+$ find . -name "*newfilewith*"
+./mynewfilewithalongname
+``` 
+
+The dot (`.`) in this command means "current directory", the first argument of `find` is always the dir where we want to 
+start the search. I.e. searching for PDF files in the `/data2/junk` directory is like:
+```
+$ find /data2/junk -name "*.pdf"
+/data2/junk/results/Reports/MultiQC/multiqc_plots/pdf/mqc_fastqc_sequence_counts_plot_1.pdf
+/data2/junk/results/Reports/MultiQC/multiqc_plots/pdf/mqc_fastqc_sequence_counts_plot_1_pc.pdf
+/data2/junk/results/Reports/MultiQC/multiqc_plots/pdf/mqc_fastqc_per_base_sequence_quality_plot_1.pdf
+/data2/junk/results/Reports/MultiQC/multiqc_plots/pdf/mqc_fastqc_per_sequence_quality_scores_plot_1.pdf
+[...]
+```
+Can search for directories only with the `-type d` directive (searching for files is `-type f`):
+
+```
+$ find /data2/junk -type d -name "pipeline*"
+/data2/junk/results/pipeline_info
+```
+
+And we can chain logical operators like `-and -not` etc., also can limit the depth of the search tree when using 
+`-maxdepth` after the search start:
+```
+$ find /data2/junk -maxdepth 2 -type d -not -name "pipeline*"|head
+/data2/junk
+/data2/junk/.nextflow
+/data2/junk/.nextflow/cache
+/data2/junk/results
+/data2/junk/results/Preprocessing
+[...]
+```
+Have to remember, that `find` is not like `ls`, the order of file listing can look random, to make it alphabetical have 
+to pipe it into `sort`. The `find` command is very powerful, there are dozen of other uses, a good starting point can 
+be the [Bash Cookbook](https://www.oreilly.com/library/view/bash-cookbook-2nd/9781491975329/) that I gave it to 
+somebody some time ago...
+
 
 ### Is it the same
 Compare files
