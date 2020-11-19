@@ -13,7 +13,7 @@ tags:
     - [Run basic callers](#Run-basic-callers)
 - [Reproduce things with conda](#Reproduce-things-with-conda)
 - [Reproduce things with singularity](#Reproduce-things-with-singularity)
-- [Where is my file](Where-is-my-file)
+- [Where is my file?](#Where-is-my-file)
 
 ### What is a pipeline?
 When making a pipeline, we are hoping that it will:
@@ -478,7 +478,7 @@ subclones and for accurate estimation of contamination and main ploidy using dee
         Could not find your config file.. Please, check the existance of bugger.conf
 ```
 
-### Where is my file
+### Where is my file?
 You have 200T data around and you are remembering only vaguely the name of the file. Munin has a (quite standard) 
 database that is updated every evening, and can be searched with the command `locate`. (Since this database is updated
 every evening by scanning through the disks, it is an other reason to clean up stuff.) If trying to find a pattern like 
