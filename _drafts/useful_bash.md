@@ -6,6 +6,8 @@ tags:
   - bash
   - linux
 ---
+## Useful bash and other tricks
+ 
 - [What is a pipeline?](#What-is-a-pipeline?)
 - [To get familiar with Sarek](#To-get-familiar-with-Sarek)
     - [Sarek use cases](#Sarek-use-cases)
@@ -14,8 +16,9 @@ tags:
 - [Reproduce things with conda](#Reproduce-things-with-conda)
 - [Reproduce things with singularity](#Reproduce-things-with-singularity)
 - [Where is my file?](#Where-is-my-file)
+- [Is it the same?](#is-it-the-same-)
 
-### What is a pipeline?
+### What is a pipeline? 
 When making a pipeline, we are hoping that it will:
 - makes processing steps in a well defined order, consecutive steps creating dependencies
 - when one of the steps fails, we are getting an error message. Furthermore, after fixing the error (i.e. adding 
@@ -29,7 +32,7 @@ it has a learning curve. On the other hand, many times when the pipeline encount
 in the pipeline itself, but in the software that serves as a step in the pipeline, and hard to find what is the 
 actual problem.
 
-#### To get familiar with Sarek
+#### To get familiar with Sarek [^](#Useful-bash-and-other-tricks)
 
 The very first thing we want to try out whether it is working at all. There is a built-in test suite, that we can run:
 
@@ -65,7 +68,7 @@ to read the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGEL
 (https://github.com/nf-core/configs) . To have a look at the test configuration of Sarek, check out https://github.com/nf-core/sarek/blob/master/conf/test.config  
 The test should complete with a "Pipeline completed successfully" message. 
 
-#### Sarek use cases:
+#### Sarek use cases: [^](#Useful-bash-and-other-tricks)
 There is already a collection of use cases in the documentation: https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
 There are three things to add: the input, the step and the tools you want to use in a particular step.  
 
@@ -96,7 +99,7 @@ G15511	XX	1	TUMOR_D0ENMT    /path/to/D0ENMT.bam	/path/to/D0ENMT.bai
 
 When starting from raw FASTQ, Sarek expects all input files to be GZ compressed. 
 
-#### Running NA12878 germline 
+#### Running NA12878 germline [^](#Useful-bash-and-other-tricks)
 The well-knows NA12878 test set from the _Genome in a Bottle (GiaB)_ project is at 
 /data2/NA12878/fastq/ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NIST_NA12878_HG001_HiSeq_300x/ on munin. To run a 
 germline mapping one can start (note I am using `--sentieon` on munin to speed up things):
@@ -170,7 +173,7 @@ different reads groups in separate tasks. At the end there will be a merging ste
 recalibration. It is important to know that the deduplicated BAM file still contains all the reads, but the recalibrated
 one _does not_: centromeres and telomeres, long tandem repeat regions are missing. 
 
-#### Run basic callers
+#### Run basic callers [^](#Useful-bash-and-other-tricks)
 
 The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
 It is advised to run Strelka and Manta together, as the default behaviour of Sarek is to run the Strelka best practices 
@@ -189,8 +192,8 @@ NFXRUN="nextflow run nf-core/sarek -r 2.6.1 -profile munin"
 ${NFXRUN} --step ....(rest of the command)
 ```  
 
+### Reproduce things with conda [^](#Useful-bash-and-other-tricks)
 
-### Reproduce things with conda
 Many times you want to install some software, but you not want to bother the system manager. 
 Or, your belowed software needs version 3.4.5 of some other software, but you have 1.2.3 installed. 
 Conda (notably [Bioconda](https://bioconda.github.io/user/install.html) ) can resolve this for you by installing
@@ -319,7 +322,8 @@ on top of the current packages. Hence, if we are installing many software into `
 version conflict. On the other hand, if we are using different environment for different tasks, we will use up disk 
 space, but that is negligible compared to NGS data. 
 
-#### Deleting a broken environment
+#### Deleting a broken environment [^](#Useful-bash-and-other-tricks)
+
 If we screw up an environment, the best is to get rid of it; first I list the available environments, then delete
 the environment called `bugger`:
 ```
@@ -343,7 +347,8 @@ gatk38                   /home/szilva/miniconda38/envs/gatk38
 gatk4                    /home/szilva/miniconda38/envs/gatk4
 ```      
 
-#### Installing software with a given version
+#### Installing software with a given version [^](#Useful-bash-and-other-tricks)
+
 I am using a test environment I have created to check various versions of samtools, and will install an earlier
 version, i.e. version 1.3.1:
 ```
@@ -386,7 +391,8 @@ Usage:   samtools <command> [options]
 [...]
 ``` 
 
-#### Updating to the latest version
+#### Updating to the latest version [^](#Useful-bash-and-other-tricks)
+
 Simple updating _should_ work as `conda update samtools`. Life is hard, for samtools it is not working as expected, 
 my guess because the difference between samtools 1.3.1 and 1.11 (the latest) is too large:
 ```
@@ -429,7 +435,8 @@ The general rule is that do not expect all the version jumps are working (i.e. w
 GATK 4.X transition is hopeless), but `conda update package-name` should work in most cases. 
 
 
-### Reproduce things with singularity
+### Reproduce things with singularity [^](#Useful-bash-and-other-tricks)
+
 The extreme version of using restricted, well-defined environments is using [singularity](https://sylabs.io/docs/) 
 containers. Singularity is practically a small machine inside a machine. On our server containers are at 
 `/data1/containers`, the most straightforward way to start the Sarek container is like:
@@ -478,7 +485,7 @@ subclones and for accurate estimation of contamination and main ploidy using dee
         Could not find your config file.. Please, check the existance of bugger.conf
 ```
 
-### Where is my file?
+### Where is my file? [^](#Useful-bash-and-other-tricks)
 You have 200T data around and you are remembering only vaguely the name of the file. Munin has a (quite standard) 
 database that is updated every evening, and can be searched with the command `locate`. (Since this database is updated
 every evening by scanning through the disks, it is an other reason to clean up stuff.) If trying to find a pattern like 
@@ -548,39 +555,107 @@ to pipe it into `sort`. The `find` command is very powerful, there are dozen of 
 be the [Bash Cookbook](https://www.oreilly.com/library/view/bash-cookbook-2nd/9781491975329/) that I gave it to 
 somebody some time ago...
 
+### Is it the same? [^](#Useful-bash-and-other-tricks)
+Comparing files, especially small textfiles always was and is a routine UNIX task; de main tool used for this is `diff`, 
+for example it can easily find differences (i.e. mistypings) in a small poem:
+```
+$ cat poem
+The way a crow
+Shook down on me
+The dust of snow
+From a hemlock tree
+$ cat poem.new
+The way a crow
+Shook down on me
+The dust of snow
+From a hemlok tree
+$ diff poem poem.new 
+4c4
+< From a hemlock tree
+---
+> From a hemlok tree
+```
+It can be difficult to find the missing *c* letter in the last line, but `diff` gives back the differing lines. 
+Nevertheless, when the difference is huge, results from `diff` can be frightening. A similar tool, `sdiff` prints 
+out both files, and puts a `|` sign to the line where they are differing (or a `<` or `>` if lines are missing from 
+the first or from the second file respectively): 
 
-### Is it the same
-Compare files
-- md5sum
-- diff, sdiff
+```
+$ sdiff poem poem.new 
+The way a crow							The way a crow
+Shook down on me						Shook down on me
+The dust of snow						The dust of snow
+From a hemlock tree				    |	From a hemlok tree
+```  
+Or, you can ask it to print out only the differing lines:
 
-### How many of them
+```
+$ sdiff -s poem poem.new 
+From a hemlock tree					|	From a hemlok tree
+```
+That is all nice and clean, but what to do with files that are >100G and were transferred via an unreliable network
+connection? As an example, I have two files, exactly the same size:
+
+```
+ $ ls -l foo*
+-rw-rw-r-- 1 szilva btb 1234321 Nov 19 19:19 foo1
+-rw-rw-r-- 1 szilva btb 1234321 Nov 19 19:18 foo2
+``` 
+The `md5sum` utility will create an [MD5 hash](https://en.wikipedia.org/wiki/MD5) that can be used for checking data
+integrity. This way one can compare large binary files: 
+```
+$ md5sum foo*
+0635c824c0dce3aac4821be1bc81eae4  foo1
+bebbb7f019e2060d37a577e6b1f41837  foo2
+```
+The funny sequence at the beginning is the MD5 hash, this should to be exactly the same for the two files, if they are
+identical. A single byte difference will create a very different hash pattern. This hash is used by NGI when delivering 
+data, the expected MD5 values are also delivered. For the 101 sample of the P13713 project the MD5 sums are:
+```
+szilva@munin /data0/P13713_fastq $ cat  P13713_101.md5
+5578952f4f234377664be2da0fd9b8ff  P13713_101/02-FASTQ/190918_A00621_0127_BHMHCMDSXX/P13713_101_S29_L003_R1_001.fastq.gz
+63fb6753320288f5c7f44bee67747bd9  P13713_101/02-FASTQ/190918_A00621_0127_BHMHCMDSXX/P13713_101_S29_L003_R2_001.fastq.gz
+fc93efccabd89846d904bc2b7851ca87  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GDSXX/P13713_101_S54_L001_R2_001.fastq.gz
+63a7943d871ab64174153b02ea069f49  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GDSXX/P13713_101_S54_L001_R1_001.fastq.gz
+88e88d1e7af404b7eb5c85503849b144  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R1_001.fastq.gz
+579a0bc0c93362eb6d6ff759004e6678  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R2_001.fastq.gz
+```
+If we calculate these on munin, the values are the same (well, for many files this should be done by `diff` and not 
+by eye):
+```
+$ for f in `awk '{print $2}' P13713_101.md5`; do md5sum $f; done
+5578952f4f234377664be2da0fd9b8ff  P13713_101/02-FASTQ/190918_A00621_0127_BHMHCMDSXX/P13713_101_S29_L003_R1_001.fastq.gz
+63fb6753320288f5c7f44bee67747bd9  P13713_101/02-FASTQ/190918_A00621_0127_BHMHCMDSXX/P13713_101_S29_L003_R2_001.fastq.gz
+fc93efccabd89846d904bc2b7851ca87  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GDSXX/P13713_101_S54_L001_R2_001.fastq.gz
+63a7943d871ab64174153b02ea069f49  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GDSXX/P13713_101_S54_L001_R1_001.fastq.gz
+88e88d1e7af404b7eb5c85503849b144  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R1_001.fastq.gz
+579a0bc0c93362eb6d6ff759004e6678  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R2_001.fastq.gz
+
+```
+
+
+### How many of them? [^](#Useful-bash-and-other-tricks)
 - wc -l
 - grep -c
 
 ### if you are still interested in modules ...
 will write if have time
 
-### yum is your friend
+### yum is your friend [^](#Useful-bash-and-other-tricks)
 
-### run a script and log its output
+### run a script and log its output [^](#Useful-bash-and-other-tricks)
 
 ./runBugger.sh 2>&1 | tee soffer.`date +%Y-%m-%d-%Hh%Mm`.log
 
-### What chromosomes are in this bloody large FASTA?
+### What chromosomes are in this bloody large FASTA? [^](#Useful-bash-and-other-tricks)
 ```awk '/>/{print}' /data1/references/igenomes/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta```
 
-### htop stopping nexftlow and all of my runaway stuff
+### htop stopping nexftlow and all of my runaway stuff [^](#Useful-bash-and-other-tricks)
 
-### too many arguments, xargs magic
+### too many arguments, xargs magic [^](#Useful-bash-and-other-tricks)
 
-### basename readlink
+### basename readlink [^](#Useful-bash-and-other-tricks)
 
-### what env do I have?
+### what env do I have? [^](#Useful-bash-and-other-tricks)
 
-### if not vim, use nano
-
-
-
-
-
+### if not vim, use nano [^](#Useful-bash-and-other-tricks)
