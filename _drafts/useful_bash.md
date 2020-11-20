@@ -8,17 +8,29 @@ tags:
 ---
 ## Useful bash and other tricks
  
-- [What is a pipeline?](#What-is-a-pipeline?)
-- [To get familiar with Sarek](#To-get-familiar-with-Sarek)
-    - [Sarek use cases](#Sarek-use-cases)
-    - [Running NA12878 germline](#Running-NA12878-germline)
-    - [Run basic callers](#Run-basic-callers)
-- [Reproduce things with conda](#Reproduce-things-with-conda)
-- [Reproduce things with singularity](#Reproduce-things-with-singularity)
-- [Where is my file?](#Where-is-my-file)
+- [Pipelines in general](#pipelines-in-general-)
+- [To get familiar with Sarek](#to-get-familiar-with-sarek-)
+    - [Sarek use cases](#Sarek-use-cases-)
+    - [Running NA12878 germline](#Running-NA12878-germline-)
+    - [Run basic callers](#Run-basic-callers-)
+- [Reproduce things with conda](#Reproduce-things-with-conda-)
+    - [Deleting a broken environment](#deleting-a-broken-environment-)
+    - [Installing software with a given version](#installing-software-with-a-given-version-)
+    - [Updating to the latest version](#updating-to-the-latest-version-)
+- [Reproduce things with singularity](#Reproduce-things-with-singularity-)
+- [Where is my file?](#Where-is-my-file-)
 - [Is it the same?](#is-it-the-same-)
+- [All I want is fusion](#all-i-want-is-fusion-)
+- [BAM subset](#BAM-subset-)
+- [How many of them?](#How-many-of-them-)
+- [Run a script and log its output](#run-a-script-and-log-its-output-)
+- [What chromosomes are in this bloody large FASTA?](#what-chromosomes-are-in-this-bloody-large-fasta-)
+- [htop, stopping nexftlow and all of my runaway stuff](#htop-stopping-nextflow-and-all-of-my-runaway-stuff-)
+- [Too many arguments, xargs magic](#too-many-arguments-xargs-magic-)
+- [Get the filename only, or full path](#get-the-filename-only-or-full-path-)
+- [What env do I have?](#What-env-do-I-have-)
 
-### What is a pipeline? 
+### Pipelines in general [^](#Useful-bash-and-other-tricks)
 When making a pipeline, we are hoping that it will:
 - makes processing steps in a well defined order, consecutive steps creating dependencies
 - when one of the steps fails, we are getting an error message. Furthermore, after fixing the error (i.e. adding 
@@ -83,6 +95,7 @@ in the command line. I.e. variant calling will only be run if an available varia
 with `--tools` directive, annotation will only be run if both a variant caller and an annotator is specified. This
 command below will start mapping, once recalibrated BAMs are available starts Strelka, finally annotates the results 
 with VEP: 
+
 ```
 $ nextflow run nf-core/sarek -r 2.6.1 -profile munin --input sample.tsv --tools strelka,vep  
 ```
@@ -174,23 +187,32 @@ recalibration. It is important to know that the deduplicated BAM file still cont
 one _does not_: centromeres and telomeres, long tandem repeat regions are missing. 
 
 #### Run basic callers [^](#Useful-bash-and-other-tricks)
-
+If we are running Sarek with only the `--input` option, it will be the mapping step that will be finished,
+no variant callers are called since no tools were defined. If we add a variant caller (alternatively an annotation tool),
+it will proceed further, and after mapping variant calling and annotation will be executed. On the other hand, if
+we already have pre-processed BAM files, we have to define the step `--varinatcalling`, otherwise the BAM files are
+going to be interpreted as BAMs waiting to be re-mapped, as the default first step is `--mapping` .
 The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
 It is advised to run Strelka and Manta together, as the default behaviour of Sarek is to run the Strelka best practices 
 pipeline where Manta creates a candidate list for small indels. Having recalibrated bams to call them is like:
 
 ```
-nextflow run nf-core/sarek -r 2.6.1 -profile munin --step variantcalling --input test.tsv --tools haplotypecaller,strelka
+nextflow run nf-core/sarek -r 2.6.1 -profile munin --step variantcalling \
+    --input test.tsv --tools haplotypecaller,strelka
 ```
 
 Note, the `nextflow run nf-core/sarek -r 2.6.1 -profile munin` part is and will be just the same in all cases. If 
 you are creating a shell script to run things, better to write something like:
 
 ```
-#/bin/bash -ex
+#!/bin/bash -xe
 NFXRUN="nextflow run nf-core/sarek -r 2.6.1 -profile munin"
 ${NFXRUN} --step ....(rest of the command)
 ```  
+
+About the `-xe` flag (and other optional flags to make bash safer to run) have a look at 
+[this](https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/) post.
+
 
 ### Reproduce things with conda [^](#Useful-bash-and-other-tricks)
 
@@ -633,29 +655,83 @@ fc93efccabd89846d904bc2b7851ca87  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GD
 
 ```
 
+### All I want is fusion [^](#Useful-bash-and-other-tricks)
+Consider you have an annotated VCF file that is usually pretty large with long lines. There are a handful possible 
+fusions in the file, and you want to have a look only them, and want to filter out the other calls. You still have to 
+retain the VCF header, so you have to have something that can do filter both. As many times `awk` can do it for you like:
+
+```
+awk '/^#/ || /gene_fusion/{print}' BigFile.vcf > fusions_only.vcf
+```  
+The pattern is between the `/  /` signs, `^` means "beginning of line", so, all VCF header lines that are starting with 
+'#' will be printed out. Alternatively, if the line contains the "gene_fusion" string as annotation, that will be 
+printed out also.  
+ 
+
+### BAM subset [^](#Useful-bash-and-other-tricks)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 ### How many of them? [^](#Useful-bash-and-other-tricks)
+
 - wc -l
 - grep -c
 
-### if you are still interested in modules ...
-will write if have time
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-### yum is your friend [^](#Useful-bash-and-other-tricks)
 
 ### run a script and log its output [^](#Useful-bash-and-other-tricks)
 
 ./runBugger.sh 2>&1 | tee soffer.`date +%Y-%m-%d-%Hh%Mm`.log
 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
 ### What chromosomes are in this bloody large FASTA? [^](#Useful-bash-and-other-tricks)
 ```awk '/>/{print}' /data1/references/igenomes/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta```
 
-### htop stopping nexftlow and all of my runaway stuff [^](#Useful-bash-and-other-tricks)
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-### too many arguments, xargs magic [^](#Useful-bash-and-other-tricks)
 
-### basename readlink [^](#Useful-bash-and-other-tricks)
+### htop, stopping nextflow and all of my runaway stuff [^](#Useful-bash-and-other-tricks)
 
-### what env do I have? [^](#Useful-bash-and-other-tricks)
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-### if not vim, use nano [^](#Useful-bash-and-other-tricks)
+
+### Too many arguments, xargs magic [^](#Useful-bash-and-other-tricks)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+### Get the filename only, or full path [^](#Useful-bash-and-other-tricks)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+### What env do I have? [^](#Useful-bash-and-other-tricks)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
+magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
