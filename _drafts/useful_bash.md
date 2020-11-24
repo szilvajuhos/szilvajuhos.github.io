@@ -670,9 +670,9 @@ printed out also.
 
 ### BAM subset [^](#Useful-bash-and-other-tricks)
 
-It can be inconvenient to use all the huge BAM files all the time, and to share data, or have a look at the most 
-important variants only it is advised to generate a subset. `samtools` can be used for this, if we have only a handful
-of intervals, we can do from command-line. Have to have an indexed BAM:
+It can be inconvenient to use all the huge BAM files all the time. To share data, or to have a look at the most 
+important variants only it is advised to generate a subset. `samtools` can be used for this - if we have only a handful
+of intervals, we can generate a subset from command-line. Have to have an indexed BAM:
 
 ```
 $ samtools view -@32 -b -M -o withM.bam test.bam chr1:123456-234567 chr1:125000-456789
@@ -686,12 +686,12 @@ $ ls -l
 
 Note the extra flags, and the intervals, that are overlapping. The `-@32 -b -o xxx.bam` stands for the number of
 CPUs used, the output format (binary BAM), and output filename respectively. The intervals can be added in IGV format
-as well (like `chr1:123.456-234.345` ), copied directly from IGV, but the most important part is the `-M` flag, that 
+as well (like `chr1:123.456-234.345` ), copied directly from IGV. The most important part is the `-M` flag, that 
 makes sure we are using the multi-region iterator, that according to the manual "increases the speed, removes 
 duplicates and outputs the reads as they are ordered in the file". As a result, if we are providing overlapping 
-intervals, reads that are present in both interval will be written out only once. Hence the difference in the two BAM
-files above. The one without the `-M` flag (`withoutM.bam`) is bigger, because due to overlapping intervals many reads 
-were written out twice.
+intervals, reads that are present in both interval will be written out only once. If the original BAM is sorted, the 
+subset will be sorted as well. Hence the difference in the two BAM files above. The one without the `-M` flag 
+(`withoutM.bam`) is bigger, because due to overlapping intervals many reads were written out twice.
 
 That is all nice, but sometimes we want to have much more locations, i.e. all the important genes, or all the
 prioritized variations. In that case the `-L` option helps, providing we have a BED file with all the locations. 
@@ -715,9 +715,9 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
 ### run a script and log its output [^](#Useful-bash-and-other-tricks)
 
-All commands in the shell standard channels, most notably the stnadard output and the standard error. We have 
-experienced many times that some commands are writing the help text to the standard error, and we can not
-catch it with `less`. When we are trying to scroll in the GATK help page:
+All commands in the shell have standard channels, most notably the standard output and the standard error (stdout
+and stderr). We have experienced many times that some commands are writing the help text to the standard error, 
+and we can not catch it with `less`. When we are trying to scroll in the GATK help page:
 
 ```
 (gatk4) $ gatk Mutect2| less
