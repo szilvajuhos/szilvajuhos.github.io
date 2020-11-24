@@ -715,13 +715,45 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 
 ### run a script and log its output [^](#Useful-bash-and-other-tricks)
 
-./runBugger.sh 2>&1 | tee soffer.`date +%Y-%m-%d-%Hh%Mm`.log
+All commands in the shell standard channels, most notably the stnadard output and the standard error. We have 
+experienced many times that some commands are writing the help text to the standard error, and we can not
+catch it with `less`. When we are trying to scroll in the GATK help page:
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+```
+(gatk4) $ gatk Mutect2| less
+~
+~
+```  
 
+We are getting only tilde signs, instead of the help text. The solution is to 
+[redirect](https://www.gnu.org/software/bash/manual/html_node/Redirections.html) the standard error to standard output,
+like:
+
+```
+(gatk4) $ gatk Mutect2 2>&1| less
+Using GATK jar /home/szilva/miniconda38/envs/gatk4/share/gatk4-4.1.9.0-0/gatk-package-4.1.9.0-local.jar
+Running:
+    java -Dsamjdk.use_async_io_read_samtools=false -Dsamjdk.use_async_io_write_samtools=true [...] 
+USAGE: Mutect2 [arguments]
+Call somatic SNVs and indels via local assembly of haplotypes
+Version:4.1.9.0
+Required Arguments:
+--input,-I <GATKPath> ...  
+```  
+
+Therefore, if we have a script that runs for a long time, and want to log both its output and its errors, we can 
+redirect these into a single file. The format is a bit weird though:
+
+```
+$ script_that_runs_for_ages.sh > output 2>&1
+``` 
+
+The drawback is that we can not see directly what is to be written into the file, I prefer to use a format like:
+```
+$ script_that_runs_for_ages.sh 2>&1 | tee whatever.`date +%Y-%m-%d-%Hh%Mm`.log
+```
+This will result in a logfile that contains the time of launching _and_ we can see on the terminal as well what is 
+happening in the moment. The `tee` utility is to save stdout to a file and show it on the terminal at the same time. 
 
 ### What chromosomes are in this bloody large FASTA? [^](#Useful-bash-and-other-tricks)
 ```awk '/>/{print}' /data1/references/igenomes/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta```
