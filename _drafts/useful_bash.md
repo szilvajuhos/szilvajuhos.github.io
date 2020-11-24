@@ -664,16 +664,43 @@ retain the VCF header, so you have to have something that can do filter both. As
 awk '/^#/ || /gene_fusion/{print}' BigFile.vcf > fusions_only.vcf
 ```  
 The pattern is between the `/  /` signs, `^` means "beginning of line", so, all VCF header lines that are starting with 
-'#' will be printed out. Alternatively, if the line contains the "gene_fusion" string as annotation, that will be 
+'#' will be printed out. Furthermore, if the line contains the "gene_fusion" string as annotation, that will be 
 printed out also.  
  
 
 ### BAM subset [^](#Useful-bash-and-other-tricks)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+It can be inconvenient to use all the huge BAM files all the time, and to share data, or have a look at the most 
+important variants only it is advised to generate a subset. `samtools` can be used for this, if we have only a handful
+of intervals, we can do from command-line. Have to have an indexed BAM:
+
+```
+$ samtools view -@32 -b -M -o withM.bam test.bam chr1:123456-234567 chr1:125000-456789
+$ samtools view -@32 -b -o withoutM.bam test.bam chr1:123456-234567 chr1:125000-456789
+$ ls -l 
+-rw-rw-r-- 1 szilva btb 111238514776 Nov 17 18:23 test.bam
+-rw-rw-r-- 1 szilva btb      9400672 Nov 17 18:19 test.bam.bai
+-rw-rw-r-- 1 szilva btb     11048646 Nov 24 15:04 withM.bam
+-rw-rw-r-- 1 szilva btb     15230493 Nov 24 15:05 withoutM.bam
+```
+
+Note the extra flags, and the intervals, that are overlapping. The `-@32 -b -o xxx.bam` stands for the number of
+CPUs used, the output format (binary BAM), and output filename respectively. The intervals can be added in IGV format
+as well (like `chr1:123.456-234.345` ), copied directly from IGV, but the most important part is the `-M` flag, that 
+makes sure we are using the multi-region iterator, that according to the manual "increases the speed, removes 
+duplicates and outputs the reads as they are ordered in the file". As a result, if we are providing overlapping 
+intervals, reads that are present in both interval will be written out only once. Hence the difference in the two BAM
+files above. The one without the `-M` flag (`withoutM.bam`) is bigger, because due to overlapping intervals many reads 
+were written out twice.
+
+That is all nice, but sometimes we want to have much more locations, i.e. all the important genes, or all the
+prioritized variations. In that case the `-L` option helps, providing we have a BED file with all the locations. 
+All the reads that are overlapping to the BED (even if with only a handful of bases) will be written out, and to be
+safe always use the `-M` flag:
+
+```
+$ samtools view -@32 -M -b -o manysmall.bam -L intervals.bed test.bam
+``` 
 
 ### How many of them? [^](#Useful-bash-and-other-tricks)
 
