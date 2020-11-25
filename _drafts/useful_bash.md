@@ -704,14 +704,41 @@ $ samtools view -@32 -M -b -o manysmall.bam -L intervals.bed test.bam
 
 ### How many of them? [^](#Useful-bash-and-other-tricks)
 
-- wc -l
-- grep -c
+The basic command to count lines is `wc` (a.k.a. "word count")  that can do line counting  as well:
+```
+$ rpm -qa|wc -l
+1830
+```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The `rpm` utility is a package-manager for CentOS though better to use the more intelligent `yum` software. Still, this
+short sample shows we have 1830 packages installed at the time of writing this paper on munin. We can also estimate
+how many common variants were thrown out by VEP:
 
+```
+$ wc -l mutect2_P2233_101T_vs_P2233_120N.AF.snpEff.ann.vep.ann.vcf
+111614 mutect2_P2233_101T_vs_P2233_120N.AF.snpEff.ann.vep.ann.vcf
+$ wc -l mutect2_P2233_101T_vs_P2233_120N.AF.snpEff.ann.vcf 
+113195 mutect2_P2233_101T_vs_P2233_120N.AF.snpEff.ann.vcf
+``` 
+
+Looks only 113195-111614=1581 lines are thrown out by VEP as common entries in this case. To count the occurrence of
+a pattern the easiest is to use `grep -c` . We are using [find](#Where-is-my-file-) to scan through all the 
+directories below, ignore `tmp` dirs, print out filenames and the number of lines that are matching to the
+"gene_fusion" pattern.
+  
+```
+$ for f in `find . -type f -name Manta*.somaticSV.vcf.snpEff.ann.vcf| grep -v tmp`; \
+> do echo -n $f" " ; grep -c gene_fusion $f; done
+./P2233_101T_P2233_120N/Annotation/SnpEff/Manta_P2233_101T_vs_P2233_120N.somaticSV.vcf.snpEff.ann.vcf 149
+./P2233_102T_P2233_121N/Annotation/SnpEff/Manta_P2233_102T_vs_P2233_121N.somaticSV.vcf.snpEff.ann.vcf 9
+./P2233_106T_P2233_125N/Annotation/SnpEff/Manta_P2233_106T_vs_P2233_125N.somaticSV.vcf.snpEff.ann.vcf 76
+./P2233_103T_P2233_122N/Annotation/SnpEff/Manta_P2233_103T_vs_P2233_122N.somaticSV.vcf.snpEff.ann.vcf 15
+./P2233_104T_P2233_123N/Annotation/SnpEff/Manta_P2233_104T_vs_P2233_123N.somaticSV.vcf.snpEff.ann.vcf 43
+[...]
+``` 
+
+Indeed, `awk` and `perl` are much more powerful in pattern-search, but for most of the cases grep is just fine. We 
+will see a shorter version of the loop going through the files using [xargs](#too-many-arguments-xargs-magic-) below. 
 
 ### run a script and log its output [^](#Useful-bash-and-other-tricks)
 
@@ -756,13 +783,35 @@ This will result in a logfile that contains the time of launching _and_ we can s
 happening in the moment. The `tee` utility is to save stdout to a file and show it on the terminal at the same time. 
 
 ### What chromosomes are in this bloody large FASTA? [^](#Useful-bash-and-other-tricks)
-```awk '/>/{print}' /data1/references/igenomes/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta/Homo_sapiens_assembly38.fasta```
+Though grep would be the first choice to print out all the header lines from a FASTA file, awk has the advantage that
+we can include fields (or columns) and in general easier to write short programs in awk. The short answer for the 
+question above is like:  
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+```
+$ awk '/>/{print $1}' Homo_sapiens_assembly38.fasta
+>chr1
+>chr2
+>chr3
+[...]
+```
 
+Furthermore, we can do other filtering, i.e. generating a BED file (that we can feed into samtools to get a 
+[subset of a large BAM](#bam-subset-)) with locations that are around the breakpoints of a reported fusions
+on chromosome 7:
+```
+$ awk '/gene_fusion/ && $1~/chr7/ {print $1"\t"$2-1000"\t"$2+1000}' Manta.somaticSV.vcf.snpEff.ann.vcf
+chr7    6025350 6027350
+chr7    6025643 6027643
+chr7    27205805        27207805
+[...]
+chr7    55096739        55098739
+chr7    100972593       100974593
+chr7    119717942       119719942
+```
+
+the `/gene_fusion/ && $1~/chr7/` part means that those lines are matching where there is a "gene_fusion" mentioned 
+and the first column (`$1`) also matches (`~`) the "chr7" string. The `{print $1"\t"$2-1000"\t"$2+1000}` part prints 
+out the first column (the chromosome this case) and &#177;1000 bps coordinates from the breakpoint.  
 
 ### htop, stopping nextflow and all of my runaway stuff [^](#Useful-bash-and-other-tricks)
 
