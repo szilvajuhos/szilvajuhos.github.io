@@ -815,11 +815,39 @@ out the first column (the chromosome this case) and &#177;1000 bps coordinates f
 
 ### htop, stopping nextflow and all of my runaway stuff [^](#Useful-bash-and-other-tricks)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The `top` utility's younger brother is `htop`, that can show a better state about the server, i.e. printing out CPU
+states, and is more convenient in general. It is important to have a look at its output even _after_ we have stopped
+a nextflow process, since some software just simply do not want to die. It can happen that we realize we forget 
+something from the command-line, want to add it, and restart the whole business, but looking at htop we can see that
+the - supposedly - interrupted workflow steps are still running happily. So, we must kill them somehow, but first 
+let's find them. The best to print them out with `ps` - it is a pretty complex command with many possible options. To 
+print out all of our processes try:
 
+```
+$ ps xw -u szilva
+   PID TTY      STAT   TIME COMMAND
+   485 pts/10   Ss     0:06 /bin/bash
+ 22736 ?        Ss     0:32 SCREEN
+ 30486 ?        S      0:00 /bin/sh /home/szilva/.Xclients
+ 30592 ?        Ss     0:32 /usr/bin/dbus-daemon --fork --print-pid 5 --print-address 7 --session
+ 30641 ?        Ss     1:19 /usr/bin/ssh-agent /home/szilva/.Xclients
+ 30642 ?        Sl     0:57 mate-session
+ 30660 ?        Sl     0:00 /usr/libexec/at-spi-bus-launcher
+ 30665 ?        S      0:01 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+ 30741 ?        Sl   157:30 caja
+ 30742 ?        Sl     2:18 mate-screensaver
+[...]
+```
+Immediately we can see there are zillion processes we are not aware running under our name. To filter out the rouge 
+ones we have to have match a pattern, get the PID (process ID) and kill the process
+
+```
+ps xw -u szilva| awk '/name_I_do_not_like/{print $1}'|xargs kill
+```  
+
+There are (at least) two things in this line that are confusing: I did not write an exact process name, since one 
+have to experiment him/herself which are the bad processes. The other part is the 
+[xargs](#too-many-arguments-xargs-magic-) thingy that leads us to the next entry.   
 
 ### Too many arguments, xargs magic [^](#Useful-bash-and-other-tricks)
 
