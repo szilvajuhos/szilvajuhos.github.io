@@ -795,9 +795,9 @@ $ awk '/>/{print $1}' Homo_sapiens_assembly38.fasta
 [...]
 ```
 
-Furthermore, we can do other filtering, i.e. generating a BED file (that we can feed into samtools to get a 
-[subset of a large BAM](#bam-subset-)) with locations that are around the breakpoints of a reported fusions
-on chromosome 7:
+Furthermore, we can do other filtering with awk, i.e. generating a BED file from VCF (that we can feed into 
+samtools to get a [subset of a large BAM](#bam-subset-)) with locations that are around the breakpoints of 
+a reported fusions on chromosome 7:
 ```
 $ awk '/gene_fusion/ && $1~/chr7/ {print $1"\t"$2-1000"\t"$2+1000}' Manta.somaticSV.vcf.snpEff.ann.vcf
 chr7    6025350 6027350
@@ -833,7 +833,7 @@ $ ps xw -u szilva
  30641 ?        Ss     1:19 /usr/bin/ssh-agent /home/szilva/.Xclients
  30642 ?        Sl     0:57 mate-session
  30660 ?        Sl     0:00 /usr/libexec/at-spi-bus-launcher
- 30665 ?        S      0:01 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+ 30665 ?        S      0:01 /usr/bin/dbus-daemon --config-file=...
  30741 ?        Sl   157:30 caja
  30742 ?        Sl     2:18 mate-screensaver
 [...]
