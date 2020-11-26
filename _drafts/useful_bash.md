@@ -927,9 +927,86 @@ $ basename -s .ion /long/filename/with/full/path/and/extens.ion
 extens
 ``` 
 
+For example I have a directory hierarchy with samples in separate directories with the "whatever.tgz" extension - one
+file is one sample. To find out every samplename that are in different directories below we can try:
+
+```
+$ tree
+.
+├── samples_A
+│   ├── series_A_1.whatever.tgz
+│   ├── series_A_2.whatever.tgz
+│   └── series_A_3.whatever.tgz
+├── samples_B
+│   ├── series_B_1.whatever.tgz
+│   ├── series_B_2.whatever.tgz
+│   └── series_B_3.whatever.tgz
+├── samples_C
+│   ├── samples_CX
+│   │   ├── series_CX_1.whatever.tgz
+│   │   ├── series_CX_2.whatever.tgz
+│   │   └── series_CX_3.whatever.tgz
+│   └── samples_CY
+│       ├── series_CY_1.whatever.tgz
+│       ├── series_CY_2.whatever.tgz
+│       └── series_CY_3.whatever.tgz
+└── samples_D
+    └── samples_DZ
+        ├── series_DZ_1.whatever.tgz
+        ├── series_DZ_2.whatever.tgz
+        └── series_DZ_3.whatever.tgz
+
+7 directories, 15 files
+$ find . -type f -name "*whatever.tgz" | xargs basename -s .whatever.tgz
+series_A_1
+series_A_2
+series_A_3
+series_B_1
+series_B_2
+series_B_3
+series_CX_1
+series_CX_2
+series_CX_3
+series_CY_1
+series_CY_2
+series_CY_3
+series_DZ_1
+series_DZ_2
+series_DZ_3
+```
+
 ### What env do I have? [^](#Useful-bash-and-other-tricks)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Variables in the shell are usually denoted by a dollar sign, like the PATH variable describing the search path of 
+binary executables is `${PATH}` or simply `$PATH` . Besides PATH there are many shell variables that can be passed to 
+commands, and we can have a look them echoing the environment with the `env` command: 
+
+```
+$ env
+MANPATH=/usr/share/lmod/lmod/share/man:
+XDG_SESSION_ID=43656
+HOSTNAME=munin.localdomain
+SHELL=/bin/bash
+TERM=screen
+HISTSIZE=1000
+CONDA_SHLVL=0
+OLDPWD=/data2/tutorial/junk/samples_D
+...
+``` 
+
+This actually prints out a lot of stuff, and we can add variables ourselves:
+
+```
+$ export HEY_ITS_MY_NEW_VARIABLE=`date`
+$ env|grep NEW_VARIABLE
+HEY_ITS_MY_NEW_VARIABLE=Thu Nov 26 14:41:58 CET 2020
+```
+
+We can check environment variables also by echoing them:
+
+```
+$ echo $PATH
+/home/szilva/miniconda38/bin:/data1/modules/module_roots/samtools/1.9/bin
+$ echo $USER
+szilva
+```
