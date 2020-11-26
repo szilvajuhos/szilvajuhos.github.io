@@ -851,10 +851,50 @@ have to experiment him/herself which are the bad processes. The other part is th
 
 ### Too many arguments, xargs magic [^](#Useful-bash-and-other-tricks)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+It can happen that we have too many files, and we just can not delete them (i.e. in a temporary directory):
+
+```
+$ ls|wc -l
+100000
+$ rm *
+bash: /bin/rm: Argument list too long
+```
+
+There are [multiple ways to delete](https://haydenjames.io/bash-usr-bin-rm-argument-list-too-long-solution/) 
+all the rubbish, what I want to show is using xargs, since it can have more use than only cleaning up dirs. For this
+case this pipe would do:
+
+```
+$ ls | xargs rm
+```
+Ditto, in the kill example above, the filtered output of the `ps` command is fed into `xargs`. Adding the command that
+we want to execute with `xargs` (that is `kill` in the case above) we can avoid writing a long loop.
+
+Using `xargs` is almost equal to a loop like `for f in *; do rm $f; done` that can do the same. The difference is 
+that `xargs` chops up the argument list into manageable chunks itself. The prime advantage of `xargs` is that 
+sometimes it is shorter and easier to use it instead of loops. For example the in the 
+"[How many of them?](#How-many-of-them-)" part we have a rather complex loop that looks like a knitting pattern. 
+Instead of the loop we can use xargs to count the gene_fusion annotations in VCFs:
+
+```
+find /data1/P2233 -type f -name Manta*.somaticSV.vcf.snpEff.ann.vcf| xargs grep -c gene_fusion 
+```   
+
+### Loops intro [^](#Useful-bash-and-other-tricks)
+THe two basic loop types are the `for` and the `while` loops. As an example, renaming files called `bugger*` to 
+`new_bugger*`:
+
+```
+for f in bugger*; do mv -v $f new_${f} ; done
+```
+
+Checking system load in every 5 minutes:
+
+```
+while [ 1 ]; do uptime; sleep 300; done
+```
+
+
 
 
 ### Get the filename only, or full path [^](#Useful-bash-and-other-tricks)
