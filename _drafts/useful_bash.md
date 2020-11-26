@@ -27,6 +27,7 @@ tags:
 - [What chromosomes are in this bloody large FASTA?](#what-chromosomes-are-in-this-bloody-large-fasta-)
 - [htop, stopping nexftlow and all of my runaway stuff](#htop-stopping-nextflow-and-all-of-my-runaway-stuff-)
 - [Too many arguments, xargs magic](#too-many-arguments-xargs-magic-)
+- [Loops intro](#loops-intro-)
 - [Get the filename only, or full path](#get-the-filename-only-or-full-path-)
 - [What env do I have?](#What-env-do-I-have-)
 
@@ -881,29 +882,50 @@ find /data1/P2233 -type f -name Manta*.somaticSV.vcf.snpEff.ann.vcf| xargs grep 
 ```   
 
 ### Loops intro [^](#Useful-bash-and-other-tricks)
-THe two basic loop types are the `for` and the `while` loops. As an example, renaming files called `bugger*` to 
-`new_bugger*`:
+THe two basic types are the `for` and the `while` loops. As an example, renaming files called `bugger*` to 
+`new_bugger*` can be done by: 
 
 ```
 for f in bugger*; do mv -v $f new_${f} ; done
 ```
 
-Checking system load in every 5 minutes:
+We can put the output of other commands as the list into the for loop. I.e. making a sequence that has even numbers
+from 2 to 12:
 
 ```
-while [ 1 ]; do uptime; sleep 300; done
+szilva@munin /data1/P2233 $ for d in `seq 2 2 12`; do echo $d; done
+2
+4
+6
+8
+10
+12
+``` 
+The while loop has a condition that is evaluated to be true or false, the commands are executed until it is true. 
+Checking system load in every 5 minutes with a while loop:
+
 ```
-
-
-
+$ while [ 1 ]; do uptime; sleep 300; done
+ 13:48:39 up 325 days,  4:37, 11 users,  load average: 0,72, 0,61, 1,04
+^C
+```
 
 ### Get the filename only, or full path [^](#Useful-bash-and-other-tricks)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+When we do need a full pathname, use `readlink` to get a string with the whole path:
 
+```
+$ readlink -f bugger.vcf 
+/data2/tutorial/bugger.vcf
+```
+
+Alternatively, when we do _not_ need a full path, use `basename`. This utility has an additional option that can be
+used: when adding `-s .xxx` , the ".xxx" suffix will be chopped down:
+
+```
+$ basename -s .ion /long/filename/with/full/path/and/extens.ion
+extens
+``` 
 
 ### What env do I have? [^](#Useful-bash-and-other-tricks)
 
