@@ -6,7 +6,7 @@ tags:
   - bash
   - linux
 ---
-## Useful bash and other tricks
+## Useful bash (and other) tricks
  
 - [Pipelines in general](#pipelines-in-general-)
 - [To get familiar with Sarek](#to-get-familiar-with-sarek-)
@@ -33,17 +33,16 @@ tags:
 
 ### Pipelines in general [^](#Useful-bash-and-other-tricks)
 When making a pipeline, we are hoping that it will:
-- makes processing steps in a well defined order, consecutive steps creating dependencies
+- make processing steps in a well defined order, consecutive steps fulfilling dependencies
 - when one of the steps fails, we are getting an error message. Furthermore, after fixing the error (i.e. adding 
 a missing reference file), the pipeline will resume from the point of error
 - there is a trace of logs about what hapened
 - when running the same pipeline twice with the same data, we are getting the same results
 - the pipeline hides processing details, number of CPUs, memory, whether it is a cluster or a single node, etc.
 
-This way a shell script is not a pipeline. Nextflow itself is a programming language made to build pipelines, but 
-it has a learning curve. On the other hand, many times when the pipeline encounters an error, it is not necessarily 
-in the pipeline itself, but in the software that serves as a step in the pipeline, and hard to find what is the 
-actual problem.
+This way a vague shell script is not a pipeline. Nextflow itself is a programming language made to build pipelines, but 
+it has its learning curve. On the other hand, many times when the pipeline encounters an error, it is not necessarily 
+in the pipeline itself, but in the software that serves as a step in the pipeline.
 
 #### To get familiar with Sarek [^](#Useful-bash-and-other-tricks)
 
@@ -70,12 +69,14 @@ GATK Spark        : Yes
 [...]
 ```
 
+`munin` is a compute node at [BTB](https://ki.se/forskning/barntumorbanken), in general this entry is not needed.    
+
 What is happening by launching this command? Nextflow is 
 - running a pipeline (hence the `run` part - nextflow can do other things as well, not only running a pipeline)
-- `nf-core/sarek` is the actual pipeline to launch. Using this sort of notation nextflow check github, looks for 
-the `nf-core/sarek` repository, downloads it and runs
-- `-r 2.6.1` refers to a particular version of Sarek. One can find out what tools are included in which version have
-to read the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGELOG.md
+- `nf-core/sarek` is the actual pipeline to launch. Using this sort of notation nextflow checks github, looks for 
+the `nf-core/sarek` repository and downloads it
+- `-r 2.6.1` refers to a particular version of Sarek. One can find out what tools are included in which version  by 
+reading the CHANGELOG page: https://github.com/nf-core/sarek/blob/master/CHANGELOG.md
 - `-profile test,munin` means that we want to run the tests on munin. When running things on munin, use the 
 `-profile munin` directive only. Besides this, there are quite a few configs available, including UPPMAX and AWS 
 (https://github.com/nf-core/configs) . To have a look at the test configuration of Sarek, check out https://github.com/nf-core/sarek/blob/master/conf/test.config  
@@ -83,15 +84,17 @@ The test should complete with a "Pipeline completed successfully" message.
 
 #### Sarek use cases: [^](#Useful-bash-and-other-tricks)
 There is already a collection of use cases in the documentation: https://github.com/nf-core/sarek/blob/master/docs/use_cases.md .
-There are three things to add: the input, the step and the tools you want to use in a particular step.  
+There are three important things to add to the command line: the input, the step and the tools you want to use in a 
+particular step.  
 
-_Input_ can be defined either by making a TSV file, or, if starting from raw data, supplying a directory containing 
+_Input_ can be defined either in a TSV file, or, if starting from raw data, supplying a directory containing 
 FASTQ files.
 
-_Step_ is to choose from major processes, you can choose only one of them. Step can be "mapping", 
+_Step_ is a name of a major process: you can choose only one of them. Step can be "mapping", 
 "prepare_recalibration", "recalibrate", "variant_calling", "annotate", "Control-FREEC". Control-FREEC has its own step
-since preparing data for Control-FREEC is different. With _step_ we specify the starting point: all following steps 
-will be run if they are available (dependencies met, for example recalibrated bams are prepared) and tools are defined
+since preparing data for Control-FREEC is different from usual varinat callers that are using BAMs only. With _step_ we 
+specify the starting point: all following steps 
+will be run if they are available (dependencies met, for example recalibrated BAMs are prepared) and tools are defined
 in the command line. I.e. variant calling will only be run if an available variant caller is specified 
 with `--tools` directive, annotation will only be run if both a variant caller and an annotator is specified. This
 command below will start mapping, once recalibrated BAMs are available starts Strelka, finally annotates the results 
@@ -101,7 +104,7 @@ with VEP:
 $ nextflow run nf-core/sarek -r 2.6.1 -profile munin --input sample.tsv --tools strelka,vep  
 ```
 
-_Tools_ are the different software that we can call in a particular step. I.e.
+_Tools_ are the different software that we can call in a particular step.
 
 There is a short description on how to make TSV files: https://github.com/nf-core/sarek/blob/master/docs/input.md . 
 Below I consider an input file with a single sample, one tumour and one blood sample like:
@@ -114,9 +117,9 @@ G15511	XX	1	TUMOR_D0ENMT    /path/to/D0ENMT.bam	/path/to/D0ENMT.bai
 When starting from raw FASTQ, Sarek expects all input files to be GZ compressed. 
 
 #### Running NA12878 germline [^](#Useful-bash-and-other-tricks)
-The well-knows NA12878 test set from the _Genome in a Bottle (GiaB)_ project is at 
-/data2/NA12878/fastq/ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NIST_NA12878_HG001_HiSeq_300x/ on munin. To run a 
-germline mapping one can start (note I am using `--sentieon` on munin to speed up things):
+The well-known NA12878 test set from the [Genome in a Bottle (GiaB)](https://www.nist.gov/programs-projects/genome-bottle) 
+project is at /data2/NA12878/fastq/ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/NA12878/NIST_NA12878_HG001_HiSeq_300x/ on 
+munin. To run a germline mapping one can start (note I am using `--sentieon` on munin to speed up things):
 ```
 $ cd /data2/tutorial 
 $ nextflow run nf-core/sarek -r 2.6.1 -profile munin --input \
@@ -128,9 +131,9 @@ the output. Nevertheless, there is a `.nextflow.log` file always in the current 
 last run. One reason that you can not run multiple nextflow runs in the same directory is that the processes would
 overwrite their logfiles. As the workflow progresses, you can check what is happening either by looking at the logfiles,
 the terminal output or the other pipeline info files (details below about these). If you list all the `.nextflow.log*` 
-files, you will see that there are actually many if you run nextflow several times before:   
+files, you will see that there are actually many if you ran the workflow several times before:   
 ```
-(base) szilva@munin /data2/tutorial $ ls -l .nextflow.log*
+$ ls -l .nextflow.log*
 -rw-rw-r-- 1 szilva   btb 371184 Nov 17 16:15 .nextflow.log
 -rw-rw-r-- 1 szilva   btb  61389 Nov 17 09:32 .nextflow.log.1
 -rw-rw-r-- 1 teresita btb 145069 Nov 16 14:11 .nextflow.log.2
@@ -145,9 +148,9 @@ files, you will see that there are actually many if you run nextflow several tim
 
 This means every time we launch a new run, the old logfile will be renamed as `.nextflow.log.1`. If there is already
 a logfile called `.nextflow.log.1`, that will be renamed as `.nextflow.log.2` and so on. This is also true to the
-pipeline info file one can find in the `results/pipeline_info` directory:
+pipeline info files one can find in the `results/pipeline_info` directory:
 ```
-(base) szilva@munin /data2/tutorial $ ls -l results/pipeline_info/
+$ ls -l results/pipeline_info/
 total 33216
 -rw-rw-r-- 1 szilva   btb 2936288 Nov 17 09:32 execution_report.html
 -rw-rw-r-- 1 teresita btb 3055459 Nov 16 14:11 execution_report.html.1
@@ -182,20 +185,20 @@ These files are:
  - results_description.html : description of used tools in html
  - software_versions.csv : version of each tool used
 
-When running a task like the one above, mapping will be done separately for each line in the TSV file processing 
-different reads groups in separate tasks. At the end there will be a merging step, afterwards deduplication and 
+When running a task like the one above, mapping will be done separately for each line in the TSV file, processing 
+read groups in separate jobs. At the end there will be a merging step, afterwards deduplication and 
 recalibration. It is important to know that the deduplicated BAM file still contains all the reads, but the recalibrated
 one _does not_: centromeres and telomeres, long tandem repeat regions are missing. 
 
 #### Run basic callers [^](#Useful-bash-and-other-tricks)
-If we are running Sarek with only the `--input` option, it will be the mapping step that will be finished,
-no variant callers are called since no tools were defined. If we add a variant caller (alternatively an annotation tool),
-it will proceed further, and after mapping variant calling and annotation will be executed. On the other hand, if
-we already have pre-processed BAM files, we have to define the step `--varinatcalling`, otherwise the BAM files are
+If we are running Sarek with only the `--input` option, only the mapping step will be completed, no variant callers 
+are going to be called since no tools were defined. If we add a variant caller (alternatively an annotation tool),
+it will proceed further, after mapping the variant calling and annotation will be executed. On the other hand, if
+we already have pre-processed BAM files, we have to define the step `--variantcalling`, otherwise the BAM files are
 going to be interpreted as BAMs waiting to be re-mapped, as the default first step is `--mapping` .
-The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
+    The two core germline callers are HaplotypeCaller and Strelka, furthermore we can have Manta for structural variants.
 It is advised to run Strelka and Manta together, as the default behaviour of Sarek is to run the Strelka best practices 
-pipeline where Manta creates a candidate list for small indels. Having recalibrated bams to call them is like:
+pipeline where Manta creates a candidate list for small indels. Having recalibrated BAMs to call them is like:
 
 ```
 nextflow run nf-core/sarek -r 2.6.1 -profile munin --step variantcalling \
@@ -217,10 +220,10 @@ About the `-xe` flag (and other optional flags to make bash safer to run) have a
 
 ### Reproduce things with conda [^](#Useful-bash-and-other-tricks)
 
-Many times you want to install some software, but you not want to bother the system manager. 
-Or, your belowed software needs version 3.4.5 of some other software, but you have 1.2.3 installed. 
+Many times you want to install some software, but you do not want to bother the system manager. 
+Or, your beloved software needs version 3.4.5 of some other software, but you have 1.2.3 installed. 
 Conda (notably [Bioconda](https://bioconda.github.io/user/install.html) ) can resolve this for you by installing
-software to your local directories and by using environments that are fine-tuned for compatible versions. There are 
+software to your local directories and using environments that are fine-tuned for compatible versions. There are 
 many different people using conda, not only bioinformaticians. The core conda packages are those that are used by 
 practically everybody, but to add biology-focused packages, it is advised to add 
 [other channels](https://bioconda.github.io/user/install.html#set-up-channels) like:
@@ -250,7 +253,7 @@ gatk                             3.7          py36_1  bioconda
 gatk                             3.8              10  bioconda            
 ...
 ```
-(it will list quite a few other versions as well). In fact, `conda search gatk4` will list even more entries as the 
+it will list quite a few other versions as well. In fact, `conda search gatk4` will list even more entries as the 
 Broad team started to use conda heavily. Now we will make two GATK environments: one for GATK 3.8, the other for GATK4. 
 First step is to create new environments:
 ```
@@ -342,7 +345,7 @@ The following packages will be downloaded:
 Once we are done with environments, we can deactivate them by `conda deactivate`. Environments are hierarchical, 
 when we are creating one, the actual environment will be considered as "base", meaning new software will be installed 
 on top of the current packages. Hence, if we are installing many software into `base`, quickly there will be a 
-version conflict. On the other hand, if we are using different environment for different tasks, we will use up disk 
+version conflict. On the other hand, if we are using different environments for different tasks, we will use up disk 
 space, but that is negligible compared to NGS data. 
 
 #### Deleting a broken environment [^](#Useful-bash-and-other-tricks)
@@ -509,10 +512,10 @@ subclones and for accurate estimation of contamination and main ploidy using dee
 ```
 
 ### Where is my file? [^](#Useful-bash-and-other-tricks)
-You have 200T data around and you are remembering only vaguely the name of the file. Munin has a (quite standard) 
-database that is updated every evening, and can be searched with the command `locate`. (Since this database is updated
-every evening by scanning through the disks, it is an other reason to clean up stuff.) If trying to find a pattern like 
-`Homo_sapiens`, only type: 
+You have 200T data around and you are remembering only vaguely the name of the file you need. Munin has a (quite standard) 
+database that is updated every evening, and can be searched with the command `locate`. Since this database is updated
+every evening by scanning through the disks, it is an other reason to clean up stuff. If you are trying to find a 
+pattern like `Homo_sapiens`, only type: 
 
 ```
 $ locate Homo_sapiens| grep -v work |head
@@ -545,7 +548,7 @@ $ find . -name "*newfilewith*"
 ./mynewfilewithalongname
 ``` 
 
-The dot (`.`) in this command means "current directory", the first argument of `find` is always the dir where we want to 
+The dot (`.`) in this command means "current directory". The first argument of `find` is always the dir where we want to 
 start the search. I.e. searching for PDF files in the `/data2/junk` directory is like:
 ```
 $ find /data2/junk -name "*.pdf"
@@ -573,9 +576,9 @@ $ find /data2/junk -maxdepth 2 -type d -not -name "pipeline*"|head
 /data2/junk/results/Preprocessing
 [...]
 ```
-Have to remember, that `find` is not like `ls`, the order of file listing can look random, to make it alphabetical have 
-to pipe it into `sort`. The `find` command is very powerful, there are dozen of other uses, a good starting point can 
-be the [Bash Cookbook](https://www.oreilly.com/library/view/bash-cookbook-2nd/9781491975329/) that I gave it to 
+Have to remember, that `find` is not like `ls`, the order of file listing can look random. To make it alphabetical you 
+have to pipe it into `sort`. The `find` command is very powerful, there are dozen of other uses, a good starting point 
+can be the [Bash Cookbook](https://www.oreilly.com/library/view/bash-cookbook-2nd/9781491975329/) that I gave it to 
 somebody some time ago...
 
 ### Is it the same? [^](#Useful-bash-and-other-tricks)
@@ -598,7 +601,7 @@ $ diff poem poem.new
 ---
 > From a hemlok tree
 ```
-It can be difficult to find the missing *c* letter in the last line, but `diff` gives back the differing lines. 
+It can be difficult to find the missing *c* letter in the last line by eye, but `diff` gives back the differing lines. 
 Nevertheless, when the difference is huge, results from `diff` can be frightening. A similar tool, `sdiff` prints 
 out both files, and puts a `|` sign to the line where they are differing (or a `<` or `>` if lines are missing from 
 the first or from the second file respectively): 
@@ -643,8 +646,8 @@ fc93efccabd89846d904bc2b7851ca87  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GD
 88e88d1e7af404b7eb5c85503849b144  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R1_001.fastq.gz
 579a0bc0c93362eb6d6ff759004e6678  P13713_101/02-FASTQ/190925_A00187_0199_AHN7J7DSXX/P13713_101_S1_L004_R2_001.fastq.gz
 ```
-If we calculate these on munin, the values are the same (well, for many files this should be done by `diff` and not 
-by eye):
+If we calculate these on munin, the values are the same (well, for many files comparing hash strings 
+should be done by `diff` and not by eye):
 ```
 $ for f in `awk '{print $2}' P13713_101.md5`; do md5sum $f; done
 5578952f4f234377664be2da0fd9b8ff  P13713_101/02-FASTQ/190918_A00621_0127_BHMHCMDSXX/P13713_101_S29_L003_R1_001.fastq.gz
@@ -659,7 +662,7 @@ fc93efccabd89846d904bc2b7851ca87  P13713_101/02-FASTQ/191004_A00187_0202_BHNF7GD
 ### All I want is fusion [^](#Useful-bash-and-other-tricks)
 Consider you have an annotated VCF file that is usually pretty large with long lines. There are a handful possible 
 fusions in the file, and you want to have a look only them, and want to filter out the other calls. You still have to 
-retain the VCF header, so you have to have something that can do filter both. As many times `awk` can do it for you like:
+retain the VCF header, so you have to have something that can do filter both. As many times before,  `awk` can help you:
 
 ```
 awk '/^#/ || /gene_fusion/{print}' BigFile.vcf > fusions_only.vcf
@@ -672,7 +675,7 @@ printed out also.
 ### BAM subset [^](#Useful-bash-and-other-tricks)
 
 It can be inconvenient to use all the huge BAM files all the time. To share data, or to have a look at the most 
-important variants only it is advised to generate a subset. `samtools` can be used for this - if we have only a handful
+important variants only, it is advised to generate a subset. `samtools` can be used for this - if we have only a handful
 of intervals, we can generate a subset from command-line. Have to have an indexed BAM:
 
 ```
@@ -685,13 +688,13 @@ $ ls -l
 -rw-rw-r-- 1 szilva btb     15230493 Nov 24 15:05 withoutM.bam
 ```
 
-Note the extra flags, and the intervals, that are overlapping. The `-@32 -b -o xxx.bam` stands for the number of
+Note the extra flags and the intervals, that are overlapping. The `-@32 -b -o xxx.bam` stands for the number of
 CPUs used, the output format (binary BAM), and output filename respectively. The intervals can be added in IGV format
 as well (like `chr1:123.456-234.345` ), copied directly from IGV. The most important part is the `-M` flag, that 
 makes sure we are using the multi-region iterator, that according to the manual "increases the speed, removes 
 duplicates and outputs the reads as they are ordered in the file". As a result, if we are providing overlapping 
-intervals, reads that are present in both interval will be written out only once. If the original BAM is sorted, the 
-subset will be sorted as well. Hence the difference in the two BAM files above. The one without the `-M` flag 
+intervals, reads that are present in multiple intervals will be written out only once. If the original BAM is sorted, 
+the subset will be sorted as well. Hence the difference in the two BAM files above. The one without the `-M` flag 
 (`withoutM.bam`) is bigger, because due to overlapping intervals many reads were written out twice.
 
 That is all nice, but sometimes we want to have much more locations, i.e. all the important genes, or all the
@@ -882,7 +885,7 @@ find /data1/P2233 -type f -name Manta*.somaticSV.vcf.snpEff.ann.vcf| xargs grep 
 ```   
 
 ### Loops intro [^](#Useful-bash-and-other-tricks)
-THe two basic types are the `for` and the `while` loops. As an example, renaming files called `bugger*` to 
+The two basic types are the `for` and the `while` loops. As an example, renaming files called `bugger*` to 
 `new_bugger*` can be done by: 
 
 ```
@@ -893,14 +896,15 @@ We can put the output of other commands as the list into the for loop. I.e. maki
 from 2 to 12:
 
 ```
-szilva@munin /data1/P2233 $ for d in `seq 2 2 12`; do echo $d; done
-2
-4
-6
-8
-10
-12
-``` 
+szilva@munin /data1/P2233 $ for d in `seq 2 2 12`; do echo "Next in sequence: "$d; done
+Next in sequence: 2
+Next in sequence: 4
+Next in sequence: 6
+Next in sequence: 8
+Next in sequence: 10
+Next in sequence: 12
+```
+ 
 The while loop has a condition that is evaluated to be true or false, the commands are executed until it is true. 
 Checking system load in every 5 minutes with a while loop:
 
@@ -912,15 +916,15 @@ $ while [ 1 ]; do uptime; sleep 300; done
 
 ### Get the filename only, or full path [^](#Useful-bash-and-other-tricks)
 
-When we do need a full pathname, use `readlink` to get a string with the whole path:
+When we do need a full pathname, use `readlink -f` to get a string with the whole path:
 
 ```
 $ readlink -f bugger.vcf 
 /data2/tutorial/bugger.vcf
 ```
 
-Alternatively, when we do _not_ need a full path, use `basename`. This utility has an additional option that can be
-used: when adding `-s .xxx` , the ".xxx" suffix will be chopped down:
+Alternatively, when we do _not_ need a full path, use `basename`. This utility has an additional option: when 
+adding `-s .xxx` , the ".xxx" suffix will be chopped down:
 
 ```
 $ basename -s .ion /long/filename/with/full/path/and/extens.ion
