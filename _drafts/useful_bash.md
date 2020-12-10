@@ -1,7 +1,7 @@
 ---
-title: 'Useful bash tricks '
-date: 2020-11-08
-permalink: /posts/2020/11/Useful_bash/
+title: 'Useful bash tricks'
+date: 2020-12-10
+permalink: /posts/2020/12/Useful_bash/
 tags:
   - bash
   - linux
@@ -36,7 +36,7 @@ When making a pipeline, we are hoping that it will:
 - make processing steps in a well defined order, consecutive steps fulfilling dependencies
 - when one of the steps fails, we are getting an error message. Furthermore, after fixing the error (i.e. adding 
 a missing reference file), the pipeline will resume from the point of error
-- there is a trace of logs about what hapened
+- there is a trace of logs about what happened
 - when running the same pipeline twice with the same data, we are getting the same results
 - the pipeline hides processing details, number of CPUs, memory, whether it is a cluster or a single node, etc.
 
